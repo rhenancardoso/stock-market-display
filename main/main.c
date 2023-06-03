@@ -19,10 +19,12 @@
 #include "nvs_flash.h"
 
 #include "config.h"
+#include "wifi.h"
 
 static const char *TAG = "main.c";
 
 extern void display_ui(lv_disp_t*disp);
+extern void set_time(void);
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
 
@@ -31,7 +33,6 @@ static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) calle
 static lv_color_t *lv_disp_buf;
 static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
 static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
-static bool wifi_init (esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -59,8 +60,7 @@ static void increase_lvgl_tick(void *arg)
     lv_tick_inc(EXAMPLE_LVGL_TICK_PERIOD_MS);
 }
 
-
-void app_main()
+void initialise_lcd(lv_disp_t *disp)
 {
     // - - - - - - LCD DRIVER INITIALISATION - - - - - - - - - - - - - - - - - - - - - - - - -/
     ESP_LOGI(TAG, "Turn off LCD backlight");
@@ -156,15 +156,26 @@ void app_main()
     disp_drv.flush_cb = lvgl_flush_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
-    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+
+    disp = lv_disp_drv_register(&disp_drv);
     disp->bg_color = lv_color_white();
     disp->bg_opa = LV_OPA_0;
+}
 
-    display_ui(&disp);
-    
+void app_main()
+{
+    // Display initialisation
+    lv_disp_t *disp;
+    initialise_lcd(&disp);
+    // Wifi initialisation
+    initialize_wifi();
+    // Get time
+    set_time();
+
     while(1)
     {
+        display_ui(&disp);
         lv_timer_handler(); /* let the GUI do its work */
-        vTaskDelay(5/portTICK_PERIOD_MS);
+        vTaskDelay(500/portTICK_PERIOD_MS);
     }
 }

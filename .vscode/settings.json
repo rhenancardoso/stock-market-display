@@ -1,4 +1,13 @@
 {
     "idf.adapterTargetName": "esp32s3",
     "idf.port": "/dev/cu.usbmodem2101",
+    "C_Cpp.errorSquiggles": "disabled",
+    "idf.openOcdConfigs": [
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32s3.cfg"
+    ],
+    "files.associations": {
+        "*.py": "python",
+        "string.h": "c"
+    },
 }

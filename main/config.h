@@ -1,6 +1,3 @@
-/* WIFI CONFIG*/
-#define ESP_WIFI_SSID               HOME_WIFI_SSID
-#define ESP_WIFI_PASS               HOME_WIFI_PASS
 
 /* LCD CONFIG */
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ   (6528000) //(10 * 1000 * 1000)

@@ -9,7 +9,7 @@
             "macFrameworkPath": [
                 "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/Users/rhenancardoso/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin/xtensa-esp32s3-elf-gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "macos-clang-arm64"

@@ -1,2 +1,2 @@
-idf_component_register(SRCS "display_screen.c" "main.c"
-                    INCLUDE_DIRS "../components/lvgl" ".")
+idf_component_register(SRCS main.c display_screen.c time.c wifi.c
+                    INCLUDE_DIRS ../components/lvgl)
