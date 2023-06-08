@@ -25,7 +25,6 @@
 
 static const char *TAG = "set-time";
 
-
 char current_time[100];
 
 
@@ -50,7 +49,6 @@ void get_SNTP_time(char *date_time){
     ESP_LOGI(TAG, "The current date/time in %s is: %s", CITY_TZ, strftime_buf);
     strcpy(date_time,strftime_buf);
 }
-
 
 static void initialize_sntp(void)
 {
@@ -81,5 +79,4 @@ void set_time(void)
 {
     get_system_time();
     get_SNTP_time(current_time);
-    printf("current date/time is = %s\n",current_time);
 }
