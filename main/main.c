@@ -159,18 +159,13 @@ void initialise_lcd(lv_disp_t *disp)
     disp->bg_opa = LV_OPA_100;
 }
 
-void app_main()
+static void displayTask(void)
 {
+    static const char *TAG = "displayTask";
     // - - INITIALISATION - - - - -
     // Display initialisation
     lv_disp_t *disp;
-    wifi wifi_conn = wifi();
-
     initialise_lcd(&disp);
-    // Wifi initialisation
-    initialize_wifi();
-    // Get time
-    set_time();
 
     // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
     ESP_LOGI(TAG, "Display main UI");
@@ -183,4 +178,24 @@ void app_main()
 		lv_timer_handler();
 		vTaskDelay(10/portTICK_PERIOD_MS);
 	}
+}
+
+static void extConnTask(void)
+{
+    static const char *TAG = "extConnTask";
+    // - - INITIALISATION - - - - -
+    ESP_LOGI(TAG, "Initialising WIFI");
+    initialize_wifi();
+    // Get time
+    set_time();
+    while(1)
+	{
+		vTaskDelay(10/portTICK_PERIOD_MS);
+	}
+}
+
+void app_main()
+{
+    xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 40000, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(extConnTask, "extConnection", 10000, NULL, 1, NULL, 0);
 }
