@@ -3,7 +3,7 @@
 #include "lvgl.h"
 #include "config.h"
 #include "esp_log.h"
-#include "esp_wifi.h"
+#include "wifi.h"
 
 #define bg_color lv_color_make(2,2,2)
 #define txt_color lv_color_make(250,250,250)
@@ -14,6 +14,7 @@
 #define BG_PANEL_SIZE_H EXAMPLE_LCD_V_RES+OFFSET_SIZE
 
 static const char *TAG = "home_page";
+extern struct Wifi wifi_conn;
 
 void update_time(lv_timer_t * timer);
 
@@ -35,10 +36,13 @@ void update_time(lv_timer_t * timer)
     localtime_r(&now, &timeinfo);
     strftime(str_clock, sizeof(str_clock), " %H:%M:%S", &timeinfo);
     char full_str[12] = "";
-    
-    strcpy(full_str, LV_SYMBOL_WIFI);
-    strcat(full_str, str_clock);
-    ESP_LOGI(TAG, "Time is: %s", str_clock);
+    if(wifi_conn.is_connected){
+        strcpy(full_str, LV_SYMBOL_WIFI);
+        strcat(full_str, str_clock);
+    }
+    else{
+        strcpy(full_str, str_clock);
+    }
     lv_label_set_text(time_lbl, full_str);
 }
 
