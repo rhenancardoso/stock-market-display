@@ -25,7 +25,7 @@ lv_obj_t *home_page_bg;
 lv_obj_t *emergency_button;
 lv_obj_t *time_lbl;
 lv_timer_t * timer_update;
-char str_clock[10];
+char str_clock[9];
 
 void update_time(lv_timer_t * timer)
 {
@@ -34,8 +34,8 @@ void update_time(lv_timer_t * timer)
     struct tm timeinfo;
     time(&now);
     localtime_r(&now, &timeinfo);
-    strftime(str_clock, sizeof(str_clock), " %H:%M:%S", &timeinfo);
-    char full_str[12] = "";
+    strftime(str_clock, sizeof(str_clock), "  %H:%M", &timeinfo);
+    char full_str[11] = "";
     if(wifi_conn.is_connected){
         strcpy(full_str, LV_SYMBOL_WIFI);
         strcat(full_str, str_clock);

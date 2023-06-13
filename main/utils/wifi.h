@@ -1,5 +1,5 @@
 #include "esp_event.h"
-#include "wifi_config.h"
+#include "../key_config.h"
 #include <string.h>
 
 #define ESP_WIFI_SSID      HOME_WIFI_SSID

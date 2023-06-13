@@ -186,7 +186,6 @@ static void extConnTask(void)
     // - - INITIALISATION - - - - -
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
-    // Get time
     set_time();
     while(1)
 	{
