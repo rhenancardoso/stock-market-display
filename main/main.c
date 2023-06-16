@@ -26,6 +26,8 @@ static const char *TAG = "main.c";
 extern void main_screen_ui(void);
 extern void update_time(lv_timer_t * timer);
 extern void set_time(void);
+extern void http_native_request(void);
+extern struct Wifi wifi_conn;
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
 
@@ -189,7 +191,11 @@ static void extConnTask(void)
     set_time();
     while(1)
 	{
-		vTaskDelay(10/portTICK_PERIOD_MS);
+        if(wifi_conn.is_connected)
+        {
+            http_native_request();
+        }
+		vTaskDelay(3000/portTICK_PERIOD_MS);
 	}
 }
 

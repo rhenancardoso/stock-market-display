@@ -1,6 +1,6 @@
 PROJECT_NAME := Stock-Display
 
-USB_PORT=/dev/cu.usbmodem2101
+USB_PORT=/dev/cu.usbmodem101
 
 .PHONY: all
 all: build 
@@ -40,3 +40,8 @@ clean:
 config:
 	echo "ESP-IDF menuconfig for ESP32 configuration"
 	idf.py menuconfig
+
+.PHONY: part-table-csv2bin
+part-table:
+	echo "ESP-IDF export input_partitions.csv to binary"
+	python ./tools/gen_esp32part.py ./tools/input_partitions.csv ./build/partition_table/partition-table.bin
