@@ -17,16 +17,15 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "nvs_flash.h"
-
+#include "weather.h"
 #include "config.h"
 #include "wifi.h"
 
 static const char *TAG = "main.c";
 
 extern void main_screen_ui(void);
-extern void update_time(lv_timer_t * timer);
+extern void update_time(lv_timer_t *timer);
 extern void set_time(void);
-extern void http_native_request(void);
 extern struct Wifi wifi_conn;
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -48,7 +47,7 @@ static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_
 
 static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
-    esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) drv->user_data;
+    esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t)drv->user_data;
     int offsetx1 = area->x1;
     int offsetx2 = area->x2;
     int offsety1 = area->y1;
@@ -62,20 +61,18 @@ void initialise_lcd(lv_disp_t *disp)
 {
     // - - - - - - LCD DRIVER INITIALISATION - - - - - - - - - - - - - - - - - - - - - - - - -/
     ESP_LOGI(TAG, "Turn off LCD backlight");
-    //GPIO configuration
+    // GPIO configuration
     gpio_config_t bk_gpio_config = {
         .pin_bit_mask = 1ULL << PIN_LCD_BL,
-        .mode = GPIO_MODE_OUTPUT
-    };
+        .mode = GPIO_MODE_OUTPUT};
     ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
     gpio_config_t rd_gpio_config = {
         .pin_bit_mask = 1ULL << PIN_LCD_RD,
-        .mode = GPIO_MODE_OUTPUT
-    };
+        .mode = GPIO_MODE_OUTPUT};
     ESP_ERROR_CHECK(gpio_config(&rd_gpio_config));
     ESP_ERROR_CHECK(gpio_set_level(PIN_LCD_RD, true));
     ESP_ERROR_CHECK(gpio_set_level(PIN_LCD_BL, EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL));
-    
+
     ESP_LOGI(TAG, "Configuring I80 BUS");
     esp_lcd_i80_bus_handle_t i80_bus = NULL;
     esp_lcd_i80_bus_config_t bus_config = {
@@ -83,16 +80,16 @@ void initialise_lcd(lv_disp_t *disp)
         .wr_gpio_num = PIN_LCD_WR,
         .clk_src = LCD_CLK_SRC_PLL160M,
         .data_gpio_nums =
-        {
-            PIN_LCD_D0,
-            PIN_LCD_D1,
-            PIN_LCD_D2,
-            PIN_LCD_D3,
-            PIN_LCD_D4,
-            PIN_LCD_D5,
-            PIN_LCD_D6,
-            PIN_LCD_D7,
-        },
+            {
+                PIN_LCD_D0,
+                PIN_LCD_D1,
+                PIN_LCD_D2,
+                PIN_LCD_D3,
+                PIN_LCD_D4,
+                PIN_LCD_D5,
+                PIN_LCD_D6,
+                PIN_LCD_D7,
+            },
         .bus_width = 8,
         .max_transfer_bytes = LVGL_LCD_BUF_SIZE * sizeof(uint16_t),
     };
@@ -108,15 +105,15 @@ void initialise_lcd(lv_disp_t *disp)
         .lcd_param_bits = LCD_PARAM_BITS,
         .on_color_trans_done = notify_lvgl_flush_ready,
         .dc_levels =
-        {
-            .dc_idle_level = 0,
-            .dc_cmd_level = 0,
-            .dc_dummy_level = 0,
-            .dc_data_level = 1,
-        },
+            {
+                .dc_idle_level = 0,
+                .dc_cmd_level = 0,
+                .dc_dummy_level = 0,
+                .dc_data_level = 1,
+            },
     };
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &io_handle));
-    
+
     ESP_LOGI(TAG, "Install LCD driver of st7789");
     esp_lcd_panel_handle_t panel_handle = NULL;
     esp_lcd_panel_dev_config_t panel_config = {
@@ -142,7 +139,7 @@ void initialise_lcd(lv_disp_t *disp)
     // - - - - - - DRAWING TO DISPLAY - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();
-    lv_color_t *buf1 = heap_caps_malloc(LVGL_LCD_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA );
+    lv_color_t *buf1 = heap_caps_malloc(LVGL_LCD_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1);
     lv_disp_draw_buf_init(&disp_buf, buf1, NULL, LVGL_LCD_BUF_SIZE);
     ESP_LOGI(TAG, "Initialising drawing variables");
@@ -173,30 +170,32 @@ static void displayTask(void)
     ESP_LOGI(TAG, "Display main UI");
     main_screen_ui();
     ESP_LOGI(TAG, "While loop");
-    while(1)
-	{
-		// The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
+    while (1)
+    {
+        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
         lv_tick_inc(5);
-		lv_timer_handler();
-		vTaskDelay(10/portTICK_PERIOD_MS);
-	}
+        lv_timer_handler();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
 }
 
 static void extConnTask(void)
 {
     static const char *TAG = "extConnTask";
+    static const char *weather_url = "http://api.openweathermap.org/data/2.5/weather?lat=-37.8142176&lon=144.9631608&appid=2beee4b707b3d852a33f5178a9753a0d";
     // - - INITIALISATION - - - - -
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
     set_time();
-    while(1)
-	{
-        if(wifi_conn.is_connected)
+    weather *melb_weather = NULL;
+    while (1)
+    {
+        if (wifi_conn.is_connected)
         {
-            http_native_request();
+            getTemperature(melb_weather);
         }
-		vTaskDelay(3000/portTICK_PERIOD_MS);
-	}
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
+    }
 }
 
 void app_main()
