@@ -6,27 +6,16 @@
 #include "cJSON.h"
 
 #define MAX_HTTP_OUTPUT_BUFFER 2048
+#define _TIMEOUT 10
 
 static const char *TAG = "http_client";
-void http_native_request(void);
+cJSON *http_get_request(char *url);
 esp_err_t _http_event_handler(esp_http_client_event_t *event);
-cJSON *parse_JSON(void);
+
+cJSON *root = NULL;
 char *response_data = NULL;
 size_t response_len = 0;
 bool all_chunks_received = false;
-
-cJSON *parse_JSON(void)
-{
-    if (all_chunks_received)
-    {
-        cJSON *root = cJSON_Parse(response_data);
-        return root;
-    }
-    else
-    {
-        return NULL;
-    }
-}
 
 esp_err_t _http_event_handler(esp_http_client_event_t *event)
 {
@@ -47,10 +36,12 @@ esp_err_t _http_event_handler(esp_http_client_event_t *event)
     return ESP_OK;
 }
 
-void http_get_request(char *url)
+cJSON *http_get_request(char *url)
 {
     char output_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0}; // Buffer to store response of http request
-    int content_length = 0;
+    uint8_t itr_timeout = 0;
+    all_chunks_received = false;
+
     esp_http_client_config_t config = {
         .url = url,
         .method = HTTP_METHOD_GET,
@@ -70,6 +61,24 @@ void http_get_request(char *url)
         if (status_code == 200)
         {
             ESP_LOGI(TAG, "Message sent Successfully");
+            while (true)
+            {
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                if (all_chunks_received)
+                {
+                    root = cJSON_Parse(response_data);
+                    break;
+                }
+                else
+                {
+                    itr_timeout++;
+                    if (itr_timeout > _TIMEOUT)
+                    {
+                        ESP_LOGI(TAG, "GET request timeout!");
+                        break;
+                    }
+                }
+            }
         }
         else
         {
@@ -77,4 +86,5 @@ void http_get_request(char *url)
         }
     }
     esp_http_client_cleanup(client);
+    return root;
 }

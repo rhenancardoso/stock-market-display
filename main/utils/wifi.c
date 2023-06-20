@@ -119,13 +119,13 @@ void wifi_init_sta(void)
      * happened. */
     if (bits & WIFI_CONNECTED_BIT)
     {
-        ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-                 ESP_WIFI_SSID, ESP_WIFI_PASS);
+        ESP_LOGI(TAG, "connected to ap SSID:%s",
+                 ESP_WIFI_SSID);
     }
     else if (bits & WIFI_FAIL_BIT)
     {
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-                 ESP_WIFI_SSID, ESP_WIFI_PASS);
+        ESP_LOGI(TAG, "Failed to connect to SSID:%s",
+                 ESP_WIFI_SSID);
     }
     else
     {

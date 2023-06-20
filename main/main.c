@@ -24,7 +24,7 @@
 static const char *TAG = "main.c";
 
 extern void main_screen_ui(void);
-extern void update_time(lv_timer_t *timer);
+extern void update_header(lv_timer_t *timer);
 extern void set_time(void);
 extern struct Wifi wifi_conn;
 
@@ -187,14 +187,13 @@ static void extConnTask(void)
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
     set_time();
-    weather *melb_weather = NULL;
     while (1)
     {
         if (wifi_conn.is_connected)
         {
-            getTemperature(melb_weather);
+            getTemperature();
         }
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(30000 / portTICK_PERIOD_MS);
     }
 }
 

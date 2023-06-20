@@ -4,6 +4,7 @@
 #include "config.h"
 #include "esp_log.h"
 #include "wifi.h"
+#include "weather.h"
 
 #define bg_color lv_color_make(2, 2, 2)
 #define txt_color lv_color_make(250, 250, 250)
@@ -15,19 +16,23 @@
 
 static const char *TAG = "home_page";
 extern struct Wifi wifi_conn;
+extern struct Weather w_melb;
 
 void update_time(lv_timer_t *timer);
 
 static lv_style_t time_style;
+static lv_style_t weather_style;
 static lv_style_t no_border_style;
 lv_obj_t *home_page;
 lv_obj_t *home_page_bg;
 lv_obj_t *emergency_button;
 lv_obj_t *time_lbl;
+lv_obj_t *weather_lbl;
 lv_timer_t *timer_update;
 char str_clock[9];
+char str_weather[6];
 
-void update_time(lv_timer_t *timer)
+void update_header(lv_timer_t *timer)
 {
     // Get time
     time_t now;
@@ -46,6 +51,15 @@ void update_time(lv_timer_t *timer)
         strcpy(full_str, str_clock);
     }
     lv_label_set_text(time_lbl, full_str);
+    if (w_melb.is_data_collected)
+    {
+        sprintf(str_weather, "%.0f °C", w_melb.temp);
+        lv_label_set_text(weather_lbl, str_weather);
+    }
+    else
+    {
+        lv_label_set_text(weather_lbl, "- °C");
+    }
 }
 
 void main_screen_ui(void)
@@ -70,9 +84,17 @@ void main_screen_ui(void)
     lv_obj_add_style(time_lbl, &time_style, 0);
     lv_label_set_text(time_lbl, str_clock);
     lv_obj_align(time_lbl, LV_ALIGN_TOP_RIGHT, -OFFSET_OBJ, OFFSET_OBJ);
+    // Create temp label object and configure
+    lv_style_init(&weather_style);
+    lv_style_set_text_color(&weather_style, txt_color);
+    lv_style_set_text_font(&weather_style, &lv_font_montserrat_16);
+    weather_lbl = lv_label_create(home_page);
+    lv_obj_add_style(weather_lbl, &weather_style, 0);
+    lv_label_set_text(weather_lbl, str_clock);
+    lv_obj_align(weather_lbl, LV_ALIGN_TOP_LEFT, OFFSET_OBJ, OFFSET_OBJ);
     lv_scr_load(home_page);
 
     ESP_LOGI(TAG, "Create timer");
-    lv_timer_t *timer = lv_timer_create(update_time, 50, NULL);
+    lv_timer_t *timer = lv_timer_create(update_header, 50, NULL);
     timer->repeat_count = -1;
 }
