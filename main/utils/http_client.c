@@ -9,7 +9,8 @@
 #define _TIMEOUT 10
 
 static const char *TAG = "http_client";
-cJSON *http_get_request(char *url);
+cJSON *http_get_JSON_request(char *url);
+char *http_request(char *url);
 esp_err_t _http_event_handler(esp_http_client_event_t *event);
 
 cJSON *root = NULL;
@@ -36,7 +37,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *event)
     return ESP_OK;
 }
 
-cJSON *http_get_request(char *url)
+char *http_request(char *url)
 {
     char output_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0}; // Buffer to store response of http request
     uint8_t itr_timeout = 0;
@@ -60,13 +61,12 @@ cJSON *http_get_request(char *url)
         int status_code = esp_http_client_get_status_code(client);
         if (status_code == 200)
         {
-            ESP_LOGI(TAG, "Message sent Successfully");
+            ESP_LOGI(TAG, "Message sent Successfully to %s", url);
             while (true)
             {
                 vTaskDelay(100 / portTICK_PERIOD_MS);
                 if (all_chunks_received)
                 {
-                    root = cJSON_Parse(response_data);
                     break;
                 }
                 else
@@ -86,5 +86,11 @@ cJSON *http_get_request(char *url)
         }
     }
     esp_http_client_cleanup(client);
+    return response_data;
+}
+
+cJSON *http_get_JSON_request(char *url)
+{
+    root = cJSON_Parse(http_request(url));
     return root;
 }

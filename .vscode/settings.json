@@ -11,6 +11,8 @@
         "string.h": "c",
         "wifi_config.h": "c",
         "WEATHER.H": "cpp",
-        "config.h": "c"
+        "config.h": "c",
+        "key_config.h": "c",
+        "lvgl.h": "c"
     },
 }

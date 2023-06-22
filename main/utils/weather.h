@@ -6,6 +6,8 @@
 #define API_KEY WEATHER_API_KEY
 
 void getTemperature(void);
+void getWeatherIcon(void);
+
 typedef struct Weather
 {
     float temp;
@@ -14,4 +16,13 @@ typedef struct Weather
     float min_temp;
     float max_temp;
     bool is_data_collected;
+    char icon[42];
+};
+
+typedef struct WeatherIcon
+{
+    uint8_t width;
+    uint8_t height;
+    uint8_t data_size;
+    uint8_t *icon_img;
 };
