@@ -29,7 +29,16 @@ make all
 During development increasing the partition app size was required due to size overflow.
 See more in [ESP-IDF website](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html)
 
-1. Update the partition-table in `/tools/input_partitions.csv`. To update the binary file with the updates run
+1. Configure the `Flash Size` using `menuconfig`. ESP32-S3 has 8 MB of flash.
+
+a. Open the IDF menuconfig
+```
+make config
+```
+
+b. Select `Serial flasher config` -> `Flash Size` -> `(X) 8MB`.
+
+2. Update the partition-table in `/tools/input_partitions.csv`. To update the binary file with the updates run
 ```
 make part-table
 ```
