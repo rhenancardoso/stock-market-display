@@ -1,4 +1,5 @@
 #include "../key_config.h"
+#include "lvgl.h"
 
 #define API_URL "http://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric"
 #define CITY_LAT MELB_LAT
@@ -16,13 +17,5 @@ typedef struct Weather
     float min_temp;
     float max_temp;
     bool is_data_collected;
-    char icon[42];
-};
-
-typedef struct WeatherIcon
-{
-    uint8_t width;
-    uint8_t height;
-    uint8_t data_size;
-    uint8_t *icon_img;
+    char icon[4];
 };

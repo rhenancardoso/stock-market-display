@@ -1,25 +1,15 @@
 #include <stdio.h>
 #include <time.h>
-#include "lvgl.h"
-#include "../config.h"
+#include <string.h>
 #include "esp_log.h"
-#include "wifi.h"
-#include "weather.h"
-
-#define bg_color lv_color_make(2, 2, 2)
-#define txt_color lv_color_make(250, 250, 250)
-
-#define OFFSET_SIZE 10
-#define OFFSET_OBJ (int8_t) OFFSET_SIZE / 2
-#define BG_PANEL_SIZE_W EXAMPLE_LCD_H_RES + OFFSET_SIZE
-#define BG_PANEL_SIZE_H EXAMPLE_LCD_V_RES + OFFSET_SIZE
+#include "display_screen.h"
+#include "../utils/wifi.h"
+#include "../utils/weather.h"
 
 static const char *TAG = "home_page";
+
 extern struct Wifi wifi_conn;
 extern struct Weather w_melb;
-extern struct WeatherIcon w_icon;
-
-void update_time(lv_timer_t *timer);
 
 static lv_style_t time_style;
 static lv_style_t weather_style;
@@ -29,6 +19,7 @@ lv_obj_t *home_page_bg;
 lv_obj_t *emergency_button;
 lv_obj_t *time_lbl;
 lv_obj_t *weather_lbl;
+lv_obj_t *weather_icon_img;
 lv_timer_t *timer_update;
 char str_clock[9];
 char str_weather[6];
@@ -56,6 +47,8 @@ void update_header(lv_timer_t *timer)
     {
         sprintf(str_weather, "%.0f °C", w_melb.temp);
         lv_label_set_text(weather_lbl, str_weather);
+        // Set weather icon
+        setWeatherIconImg(w_melb.icon);
     }
     else
     {
@@ -72,7 +65,7 @@ void main_screen_ui(void)
     lv_obj_set_scrollbar_mode(home_page, LV_SCROLLBAR_MODE_OFF);
     // Create Background object and style
     lv_style_init(&no_border_style);
-    lv_style_set_bg_color(&no_border_style, bg_color);
+    lv_style_set_bg_color(&no_border_style, bckg_color);
     home_page_bg = lv_obj_create(home_page);
     lv_obj_set_size(home_page_bg, BG_PANEL_SIZE_W, BG_PANEL_SIZE_H);
     lv_obj_align(home_page_bg, LV_ALIGN_TOP_LEFT, -OFFSET_OBJ, -OFFSET_OBJ); // this is to ensure that there is no other background colors peek through
@@ -93,13 +86,58 @@ void main_screen_ui(void)
     lv_obj_add_style(weather_lbl, &weather_style, 0);
     lv_label_set_text(weather_lbl, str_clock);
     lv_obj_align(weather_lbl, LV_ALIGN_TOP_LEFT, OFFSET_OBJ, OFFSET_OBJ);
-
-    LV_IMG_DECLARE(my_image);
-    lv_obj_t *img_obj = lv_img_create(home_page);
-    lv_img_set_src(img_obj, "../utils/png_decoder/png_decoder_test.png");
+    // create wether img
+    weather_icon_img = lv_img_create(home_page);
+    lv_img_set_src(weather_icon_img, &w01d);
+    lv_obj_align(weather_icon_img, LV_ALIGN_LEFT_MID, -10, 0);
 
     lv_scr_load(home_page);
     ESP_LOGI(TAG, "Create timer");
     lv_timer_t *timer = lv_timer_create(update_header, 50, NULL);
     timer->repeat_count = -1;
+}
+
+void setWeatherIconImg(char icon[4])
+{
+    ESP_LOGI(TAG, "set weather icon: %s", icon);
+    if (strcmp(icon, "01d") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w01d);
+    }
+    else if (strcmp(icon, "01n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w01n);
+    }
+    else if (strcmp(icon, "02d") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w02d);
+    }
+    else if (strcmp(icon, "02n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w02n);
+    }
+    else if (strcmp(icon, "03n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w03n);
+    }
+    else if (strcmp(icon, "04n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w04n);
+    }
+    else if (strcmp(icon, "09n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w09n);
+    }
+    else if (strcmp(icon, "10d") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w10d);
+    }
+    else if (strcmp(icon, "10n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w10n);
+    }
+    else if (strcmp(icon, "11n") == 0)
+    {
+        lv_img_set_src(weather_icon_img, &w11n);
+    }
 }

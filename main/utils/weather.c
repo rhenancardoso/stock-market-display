@@ -4,13 +4,13 @@
 #include "cJSON.h"
 #include "weather.h"
 #include "esp_log.h"
+#include "../display_screen/display_screen.h"
 
 static const char *TAG = "weather";
 extern cJSON *http_get_JSON_request(char *url);
 extern char *http_request(char *url);
 cJSON *weather_response = NULL;
 struct Weather w_melb;
-struct WeatherIcon w_icon;
 char weather_url[131];
 
 void pullWeatherFromJSON(cJSON *root)
@@ -34,7 +34,11 @@ void pullWeatherFromJSON(cJSON *root)
     {
         elem = cJSON_GetArrayItem(obj_weather, i);
         name = cJSON_GetObjectItem(elem, "icon");
-        sprintf(w_melb.icon, "http://openweathermap.org/img/wn/%s@2x.png", name->valuestring);
+        sprintf(w_melb.icon, "%s", name->valuestring);
+        if (w_melb.icon == '03d' || w_melb.icon == '04d' || w_melb.icon == '09d' || w_melb.icon == '11d')
+        {
+            w_melb.icon[3] = 'n';
+        }
     }
 
     w_melb.humidity = humidity;
@@ -62,22 +66,10 @@ void getTemperature(void)
     {
         ESP_LOGI(TAG, "response ready");
         pullWeatherFromJSON(weather_response);
-        getWeatherIcon();
     }
     else
     {
         w_melb.is_data_collected = false;
         ESP_LOGE(TAG, "null API response");
     }
-}
-
-void getWeatherIcon(void)
-{
-    ESP_LOGI(TAG, "Weather Icon");
-    char *icon_resp = http_request(w_melb.icon);
-    w_icon.icon_img = (uint8_t *)icon_resp;
-    w_icon.data_size = sizeof(w_icon.icon_img);
-    w_icon.width = 10;
-    w_icon.height = 10;
-    ESP_LOGI(TAG, "%s", w_icon.icon_img);
 }

@@ -1,4 +1,3 @@
-
 /*
  * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
  *
@@ -17,14 +16,13 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "nvs_flash.h"
-#include "weather.h"
+#include "utils/weather.h"
 #include "config.h"
-#include "wifi.h"
+#include "utils/wifi.h"
+#include "display_screen/display_screen.h"
 
 static const char *TAG = "main.c";
 
-extern void main_screen_ui(void);
-extern void update_header(lv_timer_t *timer);
 extern void set_time(void);
 extern struct Wifi wifi_conn;
 

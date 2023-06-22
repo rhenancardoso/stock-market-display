@@ -13,6 +13,8 @@
         "WEATHER.H": "cpp",
         "config.h": "c",
         "key_config.h": "c",
-        "lvgl.h": "c"
+        "lvgl.h": "c",
+        "wifi.h": "c",
+        "display_screen.h": "c"
     },
 }
