@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "lvgl.h"
-#include "config.h"
+#include "../config.h"
 #include "esp_log.h"
 #include "wifi.h"
 #include "weather.h"
@@ -17,6 +17,7 @@
 static const char *TAG = "home_page";
 extern struct Wifi wifi_conn;
 extern struct Weather w_melb;
+extern struct WeatherIcon w_icon;
 
 void update_time(lv_timer_t *timer);
 
@@ -92,8 +93,12 @@ void main_screen_ui(void)
     lv_obj_add_style(weather_lbl, &weather_style, 0);
     lv_label_set_text(weather_lbl, str_clock);
     lv_obj_align(weather_lbl, LV_ALIGN_TOP_LEFT, OFFSET_OBJ, OFFSET_OBJ);
-    lv_scr_load(home_page);
 
+    LV_IMG_DECLARE(my_image);
+    lv_obj_t *img_obj = lv_img_create(home_page);
+    lv_img_set_src(img_obj, "../utils/png_decoder/png_decoder_test.png");
+
+    lv_scr_load(home_page);
     ESP_LOGI(TAG, "Create timer");
     lv_timer_t *timer = lv_timer_create(update_header, 50, NULL);
     timer->repeat_count = -1;

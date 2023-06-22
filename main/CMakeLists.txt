@@ -1,2 +1,4 @@
-idf_component_register(SRCS main.c display_screen.c utils/time.c utils/wifi.c utils/http_client.c utils/weather.c
+file(GLOB_RECURSE SOURCES utils/*.c)
+
+idf_component_register(SRCS main.c ${SOURCES} display_screens/display_screen.c
                     INCLUDE_DIRS ../components/lvgl utils)
