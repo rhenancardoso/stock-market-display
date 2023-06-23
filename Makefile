@@ -1,6 +1,6 @@
 PROJECT_NAME := Stock-Display
 
-USB_PORT=/dev/cu.usbmodem2101
+USB_PORT=/dev/cu.usbmodem101
 
 .PHONY: all
 all: build 

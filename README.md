@@ -43,6 +43,32 @@ b. Select `Serial flasher config` -> `Flash Size` -> `(X) 8MB`.
 make part-table
 ```
 
+# 2.4 LVGL Library Usage
+## 2.4.1 Converting PNG image to C array
+To use PNG images with LVGL library, it is required to convert the images first.
+Luckily there is an online convertor that make it simpler.
+
+1. Go to [LVGL Converter](https://lvgl.io/tools/imageconverter):
+
+    a. Upload the image
+
+    b. Color format: `CF_TRUE_COLOR`
+
+    c. Output format: `C array`
+
+    d. Tick `Dither images (can improve quality)` and `Output in big-endian format` checkboxes.
+
+    e. Then press `Converter`
+
+
+2. Copy the converted files into the repository (eg. `main/display_screen/weather_icons`)
+
+3. Declare the image using `LV_IMG_DECLARE()`.
+```    
+    Eg. Open the `img.c` file, and at the bottom of the file.
+        search for a variable declaration using `const lv_img_dsc_t`.
+        In the header file, declar the image using `LV_IMG_DECLARE(<variable-name>)`.
+```
 
 # Troubleshooting
 * Ensure using `lvgl` library version `/release/v8.0`

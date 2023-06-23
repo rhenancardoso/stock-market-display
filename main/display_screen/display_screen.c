@@ -14,15 +14,18 @@ extern struct Weather w_melb;
 static lv_style_t time_style;
 static lv_style_t weather_style;
 static lv_style_t no_border_style;
+static lv_style_t weather_frame_style;
 lv_obj_t *home_page;
 lv_obj_t *home_page_bg;
 lv_obj_t *emergency_button;
 lv_obj_t *time_lbl;
 lv_obj_t *weather_lbl;
 lv_obj_t *weather_icon_img;
+lv_obj_t *weather_icon_frame;
 lv_timer_t *timer_update;
 char str_clock[9];
 char str_weather[6];
+uint8_t icon_move_x = 0;
 
 void update_header(lv_timer_t *timer)
 {
@@ -48,6 +51,11 @@ void update_header(lv_timer_t *timer)
         sprintf(str_weather, "%.0f °C", w_melb.temp);
         lv_label_set_text(weather_lbl, str_weather);
         // Set weather icon
+        if (icon_move_x > 150)
+        {
+            icon_move_x = 0;
+        }
+        icon_move_x++;
         setWeatherIconImg(w_melb.icon);
     }
     else
@@ -58,7 +66,6 @@ void update_header(lv_timer_t *timer)
 
 void main_screen_ui(void)
 {
-    char str_clock[10] = "";
     home_page = lv_obj_create(NULL);
     ESP_LOGI(TAG, "setup screen");
     // Create home page
@@ -86,10 +93,8 @@ void main_screen_ui(void)
     lv_obj_add_style(weather_lbl, &weather_style, 0);
     lv_label_set_text(weather_lbl, str_clock);
     lv_obj_align(weather_lbl, LV_ALIGN_TOP_LEFT, OFFSET_OBJ, OFFSET_OBJ);
-    // create wether img
-    weather_icon_img = lv_img_create(home_page);
-    lv_img_set_src(weather_icon_img, &w01d);
-    lv_obj_align(weather_icon_img, LV_ALIGN_LEFT_MID, -10, 0);
+    // Add weather container
+    add_weather_container();
 
     lv_scr_load(home_page);
     ESP_LOGI(TAG, "Create timer");
@@ -99,6 +104,7 @@ void main_screen_ui(void)
 
 void setWeatherIconImg(char icon[4])
 {
+    lv_obj_align(weather_icon_img, LV_ALIGN_LEFT_MID, icon_move_x - 100, 0);
     ESP_LOGI(TAG, "set weather icon: %s", icon);
     if (strcmp(icon, "01d") == 0)
     {
@@ -120,7 +126,7 @@ void setWeatherIconImg(char icon[4])
     {
         lv_img_set_src(weather_icon_img, &w03n);
     }
-    else if (strcmp(icon, "04n") == 0)
+    else if (strcmp(icon, "04n") == 0 || true)
     {
         lv_img_set_src(weather_icon_img, &w04n);
     }
@@ -140,4 +146,20 @@ void setWeatherIconImg(char icon[4])
     {
         lv_img_set_src(weather_icon_img, &w11n);
     }
+}
+
+void add_weather_container(void)
+{
+    // Weather icon frame
+    weather_icon_frame = lv_obj_create(home_page);
+    lv_obj_set_scrollbar_mode(weather_icon_frame, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_set_size(weather_icon_frame, 90, 80);
+    lv_obj_align(weather_icon_frame, LV_ALIGN_LEFT_MID, 20, 0);
+    lv_style_init(&weather_frame_style);
+    lv_style_set_radius(&weather_frame_style, 20);
+    lv_style_set_bg_color(&weather_frame_style, weather_box_bg);
+    lv_style_set_border_color(&weather_frame_style, lv_color_make(255, 255, 255));
+    lv_obj_add_style(weather_icon_frame, &weather_frame_style, 0);
+    // create wether img
+    weather_icon_img = lv_img_create(weather_icon_frame);
 }

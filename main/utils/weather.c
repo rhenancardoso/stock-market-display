@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "cJSON.h"
@@ -35,9 +36,9 @@ void pullWeatherFromJSON(cJSON *root)
         elem = cJSON_GetArrayItem(obj_weather, i);
         name = cJSON_GetObjectItem(elem, "icon");
         sprintf(w_melb.icon, "%s", name->valuestring);
-        if (w_melb.icon == '03d' || w_melb.icon == '04d' || w_melb.icon == '09d' || w_melb.icon == '11d')
+        if (strcmp(w_melb.icon, "03d") == 0 || strcmp(w_melb.icon, "04d") == 0 || strcmp(w_melb.icon, "09d") == 0 || strcmp(w_melb.icon, "11d") == 0)
         {
-            w_melb.icon[3] = 'n';
+            w_melb.icon[2] = 'n';
         }
     }
 
