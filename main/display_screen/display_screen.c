@@ -126,7 +126,7 @@ void setWeatherIconImg(char icon[4])
     {
         lv_img_set_src(weather_icon_img, &w03n);
     }
-    else if (strcmp(icon, "04n") == 0 || true)
+    else if (strcmp(icon, "04n") == 0)
     {
         lv_img_set_src(weather_icon_img, &w04n);
     }
@@ -154,7 +154,7 @@ void add_weather_container(void)
     weather_icon_frame = lv_obj_create(home_page);
     lv_obj_set_scrollbar_mode(weather_icon_frame, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_size(weather_icon_frame, 90, 80);
-    lv_obj_align(weather_icon_frame, LV_ALIGN_LEFT_MID, 20, 0);
+    lv_obj_align(weather_icon_frame, LV_ALIGN_LEFT_MID, 20, 10);
     lv_style_init(&weather_frame_style);
     lv_style_set_radius(&weather_frame_style, 20);
     lv_style_set_bg_color(&weather_frame_style, weather_box_bg);

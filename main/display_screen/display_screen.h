@@ -10,10 +10,6 @@
 #define BG_PANEL_SIZE_W EXAMPLE_LCD_H_RES + OFFSET_SIZE
 #define BG_PANEL_SIZE_H EXAMPLE_LCD_V_RES + OFFSET_SIZE
 
-// Main screen element positioning definition
-
-//
-
 LV_IMG_DECLARE(w01n);
 LV_IMG_DECLARE(w01d);
 LV_IMG_DECLARE(w02n);

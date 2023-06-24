@@ -46,7 +46,7 @@ make part-table
 # 2.4 LVGL Library Usage
 ## 2.4.1 Converting PNG image to C array
 To use PNG images with LVGL library, it is required to convert the images first.
-Luckily there is an online convertor that make it simpler.
+Luckily there is an online converter that makes it simpler.
 
 1. Go to [LVGL Converter](https://lvgl.io/tools/imageconverter):
 
