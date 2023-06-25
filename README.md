@@ -13,9 +13,9 @@ Tool development in OS system.
 1. ESP-IDF tool (version 5.2): [ESP-IDF website](https://docs.espressif.com/projects/esp-idf/en/release-v5.0/esp32s3/get-started/index.html)
 2. Git
 
-## 2.2 Inital development setup
+## 2.2 Initial development setup
 
-1. After cloning the project to a local directory, add EDP-IDF tool to in the project folder
+1. After cloning the project to a local directory, add EDP-IDF tool to the project folder
 ```
 . $HOME/esp/esp-idf/export.sh
 ```
@@ -27,7 +27,7 @@ make all
 
 ## 2.3 ESP Partition update
 During development increasing the partition app size was required due to size overflow.
-See more in [ESP-IDF website](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html)
+See more on [ESP-IDF website](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/partition-tables.html)
 
 1. Configure the `Flash Size` using `menuconfig`. ESP32-S3 has 8 MB of flash.
 
@@ -42,6 +42,7 @@ b. Select `Serial flasher config` -> `Flash Size` -> `(X) 8MB`.
 ```
 make part-table
 ```
+__Note:__ When running `make clean`, it is required to run `make part-table` again.
 
 # 2.4 LVGL Library Usage
 ## 2.4.1 Converting PNG image to C array
