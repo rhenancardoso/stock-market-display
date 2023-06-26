@@ -42,7 +42,7 @@ b. Select `Serial flasher config` -> `Flash Size` -> `(X) 8MB`.
 ```
 make part-table
 ```
-__Note:__ When running `make clean`, it is required to run `make part-table` again.
+__Note:__ When running `make clean`, it is required to run `make` then `make part-table` again.
 
 # 2.4 LVGL Library Usage
 ## 2.4.1 Converting PNG image to C array

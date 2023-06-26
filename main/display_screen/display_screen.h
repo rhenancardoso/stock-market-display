@@ -42,9 +42,34 @@ LV_IMG_DECLARE(w10n);
 LV_IMG_DECLARE(w10d);
 LV_IMG_DECLARE(w11n);
 
+/**
+ * Configure objects for the main screen page.
+ */
 void main_screen_ui(void);
-void _updateHeaderInfo(lv_timer_t *timer);
-void _setWeatherIconImg(char icon[4]);
-void _addWeatherBox(void);
+/**
+ * Update objects in the main screen page
+ * - Header: time label, battery icon
+ * - Body: Today's weather forecast, and icon moving
+ * - Body: 5 days forecast info
+ * @param timer       pointer to an LVGL timer object
+ */
+void _updateMainPage(lv_timer_t *timer);
+/**
+ * Get the weather icon and set the icon_img object.
+ * @param icon       icon string name to be searched
+ * @param icon_img       pointer to the image object to be set
+ * @return          icon width
+ */
+uint32_t _setWeatherIconImg(char icon[4], lv_obj_t *icon_img);
+/**
+ * Create weather box container and add to the main screen page.
+ */
+void _setWeatherBox(void);
+/**
+ * Create heading box container and add to the main screen page.
+ */
 void _setHeadingBox(void);
-void _add5DaysForecastBox(void);
+/**
+ * Create 5 days box containers and add to the main screen page.
+ */
+void _set5DaysForecastBox(void);

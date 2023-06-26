@@ -43,7 +43,7 @@ char str_clock[9];
 char str_weather[5];
 char str_battery[3];
 uint8_t icon_move_x = 0;
-uint32_t icon_width = 0;
+uint32_t w_icon_width = 0;
 
 void main_screen_ui(void)
 {
@@ -67,17 +67,17 @@ void main_screen_ui(void)
     // Add heading
     _setHeadingBox();
     // Add weather container
-    _addWeatherBox();
+    _setWeatherBox();
     // Add weather forecast boxes
-    _add5DaysForecastBox();
+    _set5DaysForecastBox();
 
     lv_scr_load(home_page);
     ESP_LOGI(TAG, "Create timer");
-    lv_timer_t *timer = lv_timer_create(_updateHeaderInfo, 25, NULL);
+    lv_timer_t *timer = lv_timer_create(_updateMainPage, 25, NULL);
     timer->repeat_count = -1;
 }
 
-void _updateHeaderInfo(lv_timer_t *timer)
+void _updateMainPage(lv_timer_t *timer)
 {
     // Get time
     time_t now;
@@ -106,17 +106,20 @@ void _updateHeaderInfo(lv_timer_t *timer)
         lv_label_set_text(weather_lbl, str_weather);
         // Set weather icon
         icon_move_x++;
-        if (icon_move_x > icon_width)
+        w_icon_width = _setWeatherIconImg(w_melb.icon, weather_icon_img);
+        w_icon_width = _setWeatherIconImg(w_melb.icon, weather_icon_img_rpt);
+        lv_obj_align(weather_icon_img, LV_ALIGN_LEFT_MID, icon_move_x - w_icon_width, 2);
+        lv_obj_align(weather_icon_img_rpt, LV_ALIGN_LEFT_MID, icon_move_x, 2);
+        if (icon_move_x > w_icon_width)
         {
             icon_move_x = 0;
         }
-        _setWeatherIconImg(w_melb.icon);
     }
     else
     {
         lv_label_set_text(weather_lbl, "--°C");
     }
-
+    // Weather Forecast
     lv_label_set_text(day1_day_wk, "MON");
     lv_label_set_text(day1_min, "--°C");
     lv_label_set_text(day1_max, "--°C");
@@ -166,74 +169,63 @@ void _setHeadingBox(void)
     lv_obj_align(battery_lbl, LV_ALIGN_LEFT_MID, 0, 0);
 }
 
-void _setWeatherIconImg(char icon[4])
+uint32_t _setWeatherIconImg(char icon[4], lv_obj_t *icon_img)
 {
-
+    uint32_t icon_width = 0;
     if (strcmp(icon, "01d") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w01d);
-        lv_img_set_src(weather_icon_img_rpt, &w01d);
+        lv_img_set_src(icon_img, &w01d);
         icon_width = w01d.header.w;
     }
     else if (strcmp(icon, "01n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w01n);
-        lv_img_set_src(weather_icon_img_rpt, &w01n);
+        lv_img_set_src(icon_img, &w01n);
         icon_width = w01n.header.w;
     }
     else if (strcmp(icon, "02d") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w02d);
-        lv_img_set_src(weather_icon_img_rpt, &w02d);
+        lv_img_set_src(icon_img, &w02d);
         icon_width = w02d.header.w;
     }
     else if (strcmp(icon, "02n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w02n);
-        lv_img_set_src(weather_icon_img_rpt, &w02n);
+        lv_img_set_src(icon_img, &w02n);
         icon_width = w02n.header.w;
     }
     else if (strcmp(icon, "03n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w03n);
-        lv_img_set_src(weather_icon_img_rpt, &w03n);
+        lv_img_set_src(icon_img, &w03n);
         icon_width = w03n.header.w;
     }
     else if (strcmp(icon, "04n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w04n);
-        lv_img_set_src(weather_icon_img_rpt, &w04n);
+        lv_img_set_src(icon_img, &w04n);
         icon_width = w04n.header.w;
     }
     else if (strcmp(icon, "09n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w09n);
-        lv_img_set_src(weather_icon_img_rpt, &w09n);
+        lv_img_set_src(icon_img, &w09n);
         icon_width = w09n.header.w;
     }
     else if (strcmp(icon, "10d") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w10d);
-        lv_img_set_src(weather_icon_img_rpt, &w10d);
+        lv_img_set_src(icon_img, &w10d);
         icon_width = w10d.header.w;
     }
     else if (strcmp(icon, "10n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w10n);
-        lv_img_set_src(weather_icon_img_rpt, &w10n);
+        lv_img_set_src(icon_img, &w10n);
         icon_width = w10n.header.w;
     }
     else if (strcmp(icon, "11n") == 0)
     {
-        lv_img_set_src(weather_icon_img, &w11n);
-        lv_img_set_src(weather_icon_img_rpt, &w11n);
+        lv_img_set_src(&icon_img, &w11n);
         icon_width = w11n.header.w;
     }
-    lv_obj_align(weather_icon_img, LV_ALIGN_LEFT_MID, icon_move_x - icon_width, 2);
-    lv_obj_align(weather_icon_img_rpt, LV_ALIGN_LEFT_MID, icon_move_x, 2);
+    return icon_width;
 }
 
-void _addWeatherBox(void)
+void _setWeatherBox(void)
 {
     lv_obj_t *weather_icon_frame;
     // Weather icon frame
@@ -264,7 +256,7 @@ void _addWeatherBox(void)
     lv_label_set_text(today_lbl, "Today");
 }
 
-void _add5DaysForecastBox(void)
+void _set5DaysForecastBox(void)
 {
     // Create Outer Box element
     static lv_style_t outer_box_bg_style;
@@ -293,28 +285,27 @@ void _add5DaysForecastBox(void)
     int box_pos_y;
     for (int i = 0; i < 5; i++)
     {
+        // lv_obj_t *day_wk = NULL;
         box_pos_y = i * (DAY_FORECAST_BOX_H + WEATHER_CONTAINER_MARGIN) - WC_MARGIN_OFFSET;
         lv_obj_t *forecast_box = lv_obj_create(forecast_outer_box);
         lv_obj_set_scrollbar_mode(forecast_box, LV_SCROLLBAR_MODE_OFF);
         lv_obj_align(forecast_box, LV_ALIGN_TOP_MID, 0, box_pos_y);
         lv_obj_set_size(forecast_box, DAY_FORECAST_BOX_W, DAY_FORECAST_BOX_H);
+        lv_style_set_pad_all(&outer_box_bg_style, WC_MARGIN_OFFSET);
         lv_obj_add_style(forecast_box, &box_day_style, 0);
 
         lv_obj_t *day_wk = lv_label_create(forecast_box);
         lv_obj_t *day_min = lv_label_create(forecast_box);
         lv_obj_t *day_max = lv_label_create(forecast_box);
         // Day of the week
-        day_wk = lv_label_create(forecast_box);
         lv_obj_add_style(day_wk, &box_day_txt_style, 0);
         lv_obj_align(day_wk, LV_ALIGN_LEFT_MID, 0, 0);
         // min temp
-        day_min = lv_label_create(forecast_box);
-        lv_obj_align(day_min, LV_ALIGN_LEFT_MID, 40, 0);
+        lv_obj_align(day_min, LV_ALIGN_LEFT_MID, 100, 0);
         lv_obj_add_style(day_min, &box_day_txt_style, 0);
         // max temp
-        day_max = lv_label_create(forecast_box);
         lv_obj_add_style(day_max, &box_day_txt_style, 0);
-        lv_obj_align(day_max, LV_ALIGN_LEFT_MID, 80, 0);
+        lv_obj_align(day_max, LV_ALIGN_LEFT_MID, 150, 0);
         switch (i)
         {
         case (0):
