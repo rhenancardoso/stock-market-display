@@ -1,24 +1,4 @@
-// SNTP
-
-#include <time.h>
-#include <sys/time.h>
-#include "esp_attr.h"
-#include "esp_sleep.h"
-#include "esp_sntp.h"
-
-// wifi
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-
-#include "lwip/err.h"
-#include "lwip/sys.h"
-
-#define CITY_TZ "Melbourne"
-#define CITY_UTC_TZ "UTC-10:00"
+#include "time.h"
 
 static const char *TAG = "set-time";
 
@@ -31,7 +11,9 @@ void time_sync_notification_cb(struct timeval *tv)
 
 void get_SNTP_time(char *date_time)
 {
+    ESP_LOGI(TAG, "Get SNTP time");
     char strftime_buf[64];
+    char today[3];
     time_t now;
     struct tm timeinfo;
     time(&now);
@@ -41,8 +23,8 @@ void get_SNTP_time(char *date_time)
     setenv("TZ", CITY_UTC_TZ, 1);
     tzset();
     localtime_r(&now, &timeinfo);
-
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    strftime(today, sizeof(today), "%a", &timeinfo);
     ESP_LOGI(TAG, "The current date/time in %s is: %s", CITY_TZ, strftime_buf);
     strcpy(date_time, strftime_buf);
 }
@@ -75,6 +57,7 @@ static void get_system_time(void)
 
 void set_time(void)
 {
+    ESP_LOGI(TAG, "Set time from SNTP server");
     get_system_time();
     get_SNTP_time(current_time);
 }

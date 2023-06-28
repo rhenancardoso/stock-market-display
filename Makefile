@@ -26,10 +26,10 @@ deploy: build
 	echo "Deploying project to connected ESP32-S3"
 	idf.py -p $(USB_PORT) flash
 
-.PHONY: dep-mon
-dep-mon: build deploy
+.PHONY: debug-monitor
+debug-monitor: deploy
 	echo "Deploying project to connected ESP32-S3"
-	idf.py -p $(USB_PORT) monitor
+	idf.py -p $(USB_PORT) monitor --print-filter="*:D"
 
 .PHONY: clean
 clean:

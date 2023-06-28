@@ -180,7 +180,6 @@ static void displayTask(void)
 static void extConnTask(void)
 {
     static const char *TAG = "extConnTask";
-    static const char *weather_url = "http://api.openweathermap.org/data/2.5/weather?lat=-37.8142176&lon=144.9631608&appid=2beee4b707b3d852a33f5178a9753a0d";
     // - - INITIALISATION - - - - -
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
@@ -189,14 +188,15 @@ static void extConnTask(void)
     {
         if (wifi_conn.is_connected)
         {
-            getTemperature();
+            getTodaysForecast();
+            getWeeklyForecast();
         }
-        vTaskDelay(30000 / portTICK_PERIOD_MS);
+        vTaskDelay(WEATHER_UPDATE_MS / portTICK_PERIOD_MS);
     }
 }
 
 void app_main()
 {
-    xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 40000, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 50000, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(extConnTask, "extConnection", 10000, NULL, 1, NULL, 0);
 }

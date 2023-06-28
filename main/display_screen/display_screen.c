@@ -6,10 +6,15 @@
 #include "../utils/wifi.h"
 #include "../utils/weather.h"
 
+#define INITIAL_5DAYS_TIMER_MS (TIMER_PERIOD + 10)
+
 static const char *TAG = "home_page";
 
 extern struct Wifi wifi_conn;
 extern struct Weather w_melb;
+extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
+
+extern char *convertInttoStr(uint8_t week_day);
 
 static lv_style_t time_style;
 static lv_style_t weather_style;
@@ -60,18 +65,21 @@ uint32_t f_icon_width = 0;
 
 void main_screen_ui(void)
 {
+    ESP_LOGI(TAG, "setup screen");
     static lv_style_t screen_bg_style;
     lv_obj_t *home_page_bg;
 
+    ESP_LOGD(TAG, "Create home_page LVGL object");
     home_page = lv_obj_create(NULL);
-    ESP_LOGI(TAG, "setup screen");
     // Create home page
     lv_obj_set_scrollbar_mode(home_page, LV_SCROLLBAR_MODE_OFF);
     // Create Background object and style
+    ESP_LOGD(TAG, "Initiliaze screen_bg_style");
     lv_style_init(&screen_bg_style);
-    lv_style_set_bg_color(&screen_bg_style, bckg_color);
+    lv_style_set_bg_color(&screen_bg_style, black_color);
     lv_style_set_radius(&screen_bg_style, 0);
     lv_style_set_border_width(&screen_bg_style, 0);
+    ESP_LOGD(TAG, "Create home_page_bg LVGL object");
     home_page_bg = lv_obj_create(home_page);
     lv_obj_set_size(home_page_bg, BG_PANEL_SIZE_W, BG_PANEL_SIZE_H);
     lv_obj_align(home_page_bg, LV_ALIGN_TOP_LEFT, 0, 0); // this is to ensure that there is no other background colors peek through
@@ -85,99 +93,141 @@ void main_screen_ui(void)
     _set5DaysForecastBox();
 
     lv_scr_load(home_page);
-    ESP_LOGI(TAG, "Create timer");
+    ESP_LOGD(TAG, "Create 'timer_update_weather_box' timer with %dms period", TIMER_PERIOD);
     timer_update_weather_box = lv_timer_create(_updateMainPage, TIMER_PERIOD, NULL);
     timer_update_weather_box->repeat_count = -1;
+    ESP_LOGD(TAG, "Create 'timer_forecast_containers' timer with %dms period", INITIAL_5DAYS_TIMER_MS);
+    timer_forecast_containers = lv_timer_create(_update5DaysForecast, INITIAL_5DAYS_TIMER_MS, NULL);
+    timer_forecast_containers->repeat_count = -1;
 }
 
 void _updateMainPage(lv_timer_t *timer)
 {
+    ESP_LOGD(TAG, "Update main page: Heading and Today's weather box");
     // Get time
     time_t now;
     struct tm timeinfo;
+    ESP_LOGD(TAG, "Get system time");
     time(&now);
     localtime_r(&now, &timeinfo);
     strftime(str_clock, sizeof(str_clock), "  %H:%M", &timeinfo);
+    ESP_LOGD(TAG, "Local time is: %s", str_clock);
     char full_str_CLK[11] = "";
     if (wifi_conn.is_connected)
     {
+        ESP_LOGD(TAG, "Wifi connected, copy wifi symbol to clock string");
         strcpy(full_str_CLK, LV_SYMBOL_WIFI);
         strcat(full_str_CLK, str_clock);
     }
     else
     {
+        ESP_LOGD(TAG, "Wifi not connected, clock string without wifi icon");
         strcpy(full_str_CLK, str_clock);
     }
+    ESP_LOGD(TAG, "Set time label in heading");
     lv_label_set_text(time_lbl, full_str_CLK);
     // Battery
+    ESP_LOGD(TAG, "Set battery icon in heading");
     lv_label_set_text(battery_lbl, LV_SYMBOL_BATTERY_FULL);
 
     // Weather
     if (w_melb.is_data_collected)
     {
+        ESP_LOGD(TAG, "Weather data has been collected, updating weather box display");
+        // Update Todays weather temperature
         sprintf(str_weather, "%.0f°C", w_melb.temp);
         lv_label_set_text(weather_lbl, str_weather);
         // Set weather icon
         icon_move_x++;
-        w_icon_width = _setWeatherIconImg(w_melb.icon, weather_icon_img);
+        w_icon_width = getWeatherIconWidth(w_melb.icon);
+        setWeatherIconImg(w_melb.icon, weather_icon_img);
         lv_obj_align(weather_icon_img, LV_ALIGN_LEFT_MID, icon_move_x - w_icon_width, 2);
-        w_icon_width = _setWeatherIconImg(w_melb.icon, weather_icon_img_rpt);
+        w_icon_width = getWeatherIconWidth(w_melb.icon);
+        setWeatherIconImg(w_melb.icon, weather_icon_img_rpt);
         lv_obj_align(weather_icon_img_rpt, LV_ALIGN_LEFT_MID, icon_move_x, 2);
         if (icon_move_x > w_icon_width)
         {
             icon_move_x = 0;
         }
-        if (tick_forecast_cnt == ZERO_TICK || tick_forecast_cnt >= 100)
-        {
-            _update5DaysForecast();
-            tick_forecast_cnt = FIRST_TICK;
-        }
-        tick_forecast_cnt++;
     }
     else
     {
+        ESP_LOGD(TAG, "Weather data not collected, diplaying --°C");
         lv_label_set_text(weather_lbl, "--°C");
-        lv_label_set_text(day1_day_wk, "MON");
-        lv_label_set_text(day1_min, "--°C");
-        lv_label_set_text(day1_max, "--°C");
-        lv_label_set_text(day2_day_wk, "TUE");
-        lv_label_set_text(day2_min, "--°C");
-        lv_label_set_text(day2_max, "--°C");
-        lv_label_set_text(day3_day_wk, "WED");
-        lv_label_set_text(day3_min, "--°C");
-        lv_label_set_text(day3_max, "--°C");
-        lv_label_set_text(day4_day_wk, "THU");
-        lv_label_set_text(day4_min, "--°C");
-        lv_label_set_text(day4_max, "--°C");
-        lv_label_set_text(day5_day_wk, "FRI");
-        lv_label_set_text(day5_min, "--°C");
-        lv_label_set_text(day5_max, "--°C");
     }
 }
 
 void _update5DaysForecast(void)
 {
-    ESP_LOGI(TAG, "Update weather info in forecast containers");
-    f_icon_width = _setWeatherIconImg("03n", day1_icon);
-    lv_label_set_text(day1_day_wk, "MON");
-    lv_label_set_text(day1_min, "--°C");
-    lv_label_set_text(day1_max, "--°C");
-    f_icon_width = _setWeatherIconImg("01d", day2_icon);
-    lv_label_set_text(day2_day_wk, "TUE");
-    lv_label_set_text(day2_min, "--°C");
-    lv_label_set_text(day2_max, "--°C");
-    f_icon_width = _setWeatherIconImg("02d", day3_icon);
-    lv_label_set_text(day3_day_wk, "WED");
-    lv_label_set_text(day3_min, "--°C");
-    lv_label_set_text(day3_max, "--°C");
-    f_icon_width = _setWeatherIconImg("04n", day4_icon);
-    lv_label_set_text(day4_day_wk, "THU");
-    lv_label_set_text(day4_min, "--°C");
-    lv_label_set_text(day4_max, "--°C");
-    f_icon_width = _setWeatherIconImg("10d", day5_icon);
-    lv_label_set_text(day5_day_wk, "FRI");
-    lv_label_set_text(day5_min, "--°C");
-    lv_label_set_text(day5_max, "--°C");
+    // Weather
+    if (w_melb.is_data_collected)
+    {
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        ESP_LOGD(TAG, "Update weather info in forecast containers");
+        for (uint8_t i = 1; i < DAYS_FORECAST; i++)
+        {
+            char temp_min[6] = "";
+            char temp_max[6] = "";
+            char week_day[4] = "";
+            sprintf(temp_min, "%.0f°C", weeklyForecast[i].min_temp);
+            sprintf(temp_max, "%.0f°C", weeklyForecast[i].max_temp);
+            sprintf(week_day, "%s", convertInttoStr(weeklyForecast[i].week_day));
+            int icon_code = weeklyForecast[i].icon_code;
+            ESP_LOGI(TAG, "Update %d container: Week Day: %s/ Icon-code: %d / Max Temp: %s/ Min Temp: %s", i, week_day, icon_code, temp_min, temp_max);
+            switch (i)
+            {
+            case (1):
+                setWeeklyForecastIconImg(icon_code, day1_icon);
+                lv_label_set_text(day1_day_wk, week_day);
+                lv_label_set_text(day1_min, temp_min);
+                lv_label_set_text(day1_max, temp_max);
+            case (2):
+                setWeeklyForecastIconImg(icon_code, day2_icon);
+                lv_label_set_text(day2_day_wk, week_day);
+                lv_label_set_text(day2_min, temp_min);
+                lv_label_set_text(day2_max, temp_max);
+            case (3):
+                setWeeklyForecastIconImg(icon_code, day3_icon);
+                lv_label_set_text(day3_day_wk, week_day);
+                lv_label_set_text(day3_min, temp_min);
+                lv_label_set_text(day3_max, temp_max);
+            case (4):
+                setWeeklyForecastIconImg(icon_code, day4_icon);
+                lv_label_set_text(day4_day_wk, week_day);
+                lv_label_set_text(day4_min, temp_min);
+                lv_label_set_text(day4_max, temp_max);
+            case (5):
+                setWeeklyForecastIconImg(icon_code, day5_icon);
+                lv_label_set_text(day5_day_wk, week_day);
+                lv_label_set_text(day5_min, temp_min);
+                lv_label_set_text(day5_max, temp_max);
+            }
+        }
+        // Update period after first screen initialisation
+        if (timer_forecast_containers->period == TIMER_PERIOD + 10)
+        {
+            timer_forecast_containers->period = WEATHER_UPDATE_MS;
+        }
+    }
+    else
+    {
+        ESP_LOGW(TAG, "Data not collected");
+        lv_label_set_text(day1_day_wk, convertInttoStr(weeklyForecast[1].week_day));
+        lv_label_set_text(day1_min, "--°C");
+        lv_label_set_text(day1_max, "--°C");
+        lv_label_set_text(day2_day_wk, convertInttoStr(weeklyForecast[2].week_day));
+        lv_label_set_text(day2_min, "--°C");
+        lv_label_set_text(day2_max, "--°C");
+        lv_label_set_text(day3_day_wk, convertInttoStr(weeklyForecast[3].week_day));
+        lv_label_set_text(day3_min, "--°C");
+        lv_label_set_text(day3_max, "--°C");
+        lv_label_set_text(day4_day_wk, convertInttoStr(weeklyForecast[4].week_day));
+        lv_label_set_text(day4_min, "--°C");
+        lv_label_set_text(day4_max, "--°C");
+        lv_label_set_text(day5_day_wk, convertInttoStr(weeklyForecast[5].week_day));
+        lv_label_set_text(day5_min, "--°C");
+        lv_label_set_text(day5_max, "--°C");
+    }
 }
 
 void _setHeadingBox(void)
@@ -196,7 +246,7 @@ void _setHeadingBox(void)
     lv_obj_add_style(heading_container, &heading_container_style, 0);
     // Create hour label object and configure
     lv_style_init(&time_style);
-    lv_style_set_text_color(&time_style, txt_color);
+    lv_style_set_text_color(&time_style, white_color);
     lv_style_set_text_font(&time_style, &lv_font_montserrat_16);
     time_lbl = lv_label_create(heading_container);
     lv_obj_add_style(time_lbl, &time_style, 0);
@@ -204,7 +254,7 @@ void _setHeadingBox(void)
     lv_obj_align(time_lbl, LV_ALIGN_RIGHT_MID, 0, 0);
     // Create temp label object and configure
     lv_style_init(&battery_style);
-    lv_style_set_text_color(&battery_style, txt_color);
+    lv_style_set_text_color(&battery_style, white_color);
     lv_style_set_text_font(&battery_style, &lv_font_montserrat_16);
     battery_lbl = lv_label_create(heading_container);
     lv_obj_add_style(battery_lbl, &battery_style, 0);
@@ -254,7 +304,7 @@ void _set5DaysForecastBox(void)
     lv_style_init(&outer_box_bg_style);
     lv_style_set_radius(&outer_box_bg_style, 0);
     lv_style_set_border_width(&outer_box_bg_style, 0);
-    lv_style_set_bg_color(&outer_box_bg_style, bckg_color);
+    lv_style_set_bg_color(&outer_box_bg_style, black_color);
     lv_style_set_pad_all(&outer_box_bg_style, WC_MARGIN_OFFSET);
     lv_obj_add_style(forecast_outer_box, &outer_box_bg_style, 0);
 
@@ -272,7 +322,7 @@ void _set5DaysForecastBox(void)
     lv_style_set_text_font(&box_day_txt_style, &lv_font_montserrat_14);
     int box_pos_y;
 
-    for (int i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < 5; i++)
     {
         box_pos_y = i * (DAY_FORECAST_BOX_H + WEATHER_CONTAINER_MARGIN) - WC_MARGIN_OFFSET;
         forecast_box = lv_obj_create(forecast_outer_box);
@@ -333,60 +383,4 @@ void _set5DaysForecastBox(void)
             day5_icon = day_icon;
         }
     }
-}
-
-uint32_t _setWeatherIconImg(char icon[4], lv_obj_t *icon_img)
-{
-    uint32_t icon_width = 0;
-    if (strcmp(icon, "01d") == 0)
-    {
-        lv_img_set_src(icon_img, &w01d);
-        icon_width = w01d.header.w;
-    }
-    else if (strcmp(icon, "01n") == 0)
-    {
-        lv_img_set_src(icon_img, &w01n);
-        icon_width = w01n.header.w;
-    }
-    else if (strcmp(icon, "02d") == 0)
-    {
-        lv_img_set_src(icon_img, &w02d);
-        icon_width = w02d.header.w;
-    }
-    else if (strcmp(icon, "02n") == 0)
-    {
-        lv_img_set_src(icon_img, &w02n);
-        icon_width = w02n.header.w;
-    }
-    else if (strcmp(icon, "03n") == 0)
-    {
-        lv_img_set_src(icon_img, &w03n);
-        icon_width = w03n.header.w;
-    }
-    else if (strcmp(icon, "04n") == 0)
-    {
-        lv_img_set_src(icon_img, &w04n);
-        icon_width = w04n.header.w;
-    }
-    else if (strcmp(icon, "09n") == 0)
-    {
-        lv_img_set_src(icon_img, &w09n);
-        icon_width = w09n.header.w;
-    }
-    else if (strcmp(icon, "10d") == 0)
-    {
-        lv_img_set_src(icon_img, &w10d);
-        icon_width = w10d.header.w;
-    }
-    else if (strcmp(icon, "10n") == 0)
-    {
-        lv_img_set_src(icon_img, &w10n);
-        icon_width = w10n.header.w;
-    }
-    else if (strcmp(icon, "11n") == 0)
-    {
-        lv_img_set_src(&icon_img, &w11n);
-        icon_width = w11n.header.w;
-    }
-    return icon_width;
 }

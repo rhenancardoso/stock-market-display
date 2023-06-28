@@ -1,14 +1,14 @@
 #include "lvgl.h"
 #include "../config.h"
 
-#define TIMER_PERIOD (uint8_t)100
+#define TIMER_PERIOD (uint8_t)50
 #define FORECAST_TICK_CNT (uint32_t)3600000 / TIMER_PERIOD
 #define ZERO_TICK 0b0
 #define FIRST_TICK 0b1
 
 // Colors (BRG) - - - - - - - - - - - - - - - - - - - - - - - - -
-#define bckg_color lv_color_make(0, 0, 0)
-#define txt_color lv_color_make(255, 255, 255)
+#define black_color lv_color_make(0, 0, 0)
+#define white_color lv_color_make(255, 255, 255)
 #define weather_box_bg lv_color_make(255, 102, 243)
 
 // Colors Project Pallete  - - - - - - - - - - - - - - - -
@@ -36,17 +36,6 @@
 #define DAY_FORECAST_BOX_H 24
 // #define DAY_FORECAST_BOX_H (uint8_t)((DAY_FORECAST_OUT_BOX_H / 5) - (WC_MARGIN_OFFSET * 5))
 
-LV_IMG_DECLARE(w01n);
-LV_IMG_DECLARE(w01d);
-LV_IMG_DECLARE(w02n);
-LV_IMG_DECLARE(w02d);
-LV_IMG_DECLARE(w03n);
-LV_IMG_DECLARE(w04n);
-LV_IMG_DECLARE(w09n);
-LV_IMG_DECLARE(w10n);
-LV_IMG_DECLARE(w10d);
-LV_IMG_DECLARE(w11n);
-
 /**
  * Configure objects for the main screen page.
  */
@@ -59,13 +48,6 @@ void main_screen_ui(void);
  * @param timer       pointer to an LVGL timer object
  */
 void _updateMainPage(lv_timer_t *timer);
-/**
- * Get the weather icon and set the icon_img object.
- * @param icon       icon string name to be searched
- * @param icon_img       pointer to the image object to be set
- * @return          icon width
- */
-uint32_t _setWeatherIconImg(char icon[4], lv_obj_t *icon_img);
 /**
  * Create weather box container and add to the main screen page.
  */
