@@ -1,6 +1,11 @@
 #include "lvgl.h"
 #include "../config.h"
 
+#define TIMER_PERIOD (uint8_t)100
+#define FORECAST_TICK_CNT (uint32_t)3600000 / TIMER_PERIOD
+#define ZERO_TICK 0b0
+#define FIRST_TICK 0b1
+
 // Colors (BRG) - - - - - - - - - - - - - - - - - - - - - - - - -
 #define bckg_color lv_color_make(0, 0, 0)
 #define txt_color lv_color_make(255, 255, 255)
@@ -20,7 +25,7 @@
 // Containers size def - - - - - - - - - - - - - - - - - - -
 #define HEADING_W EXAMPLE_LCD_H_RES
 #define HEADING_H 22
-#define WEATHER_CONTAINER_MARGIN 10
+#define WEATHER_CONTAINER_MARGIN 5
 #define WC_MARGIN_OFFSET (uint8_t)(WEATHER_CONTAINER_MARGIN / 2)
 #define WEATHER_CONTAINER_W (uint8_t)(BG_PANEL_SIZE_W / 3) - WEATHER_CONTAINER_MARGIN
 #define WEATHER_CONTAINER_H BG_PANEL_SIZE_H - (HEADING_H + WEATHER_CONTAINER_MARGIN)
@@ -28,7 +33,7 @@
 #define DAY_FORECAST_OUT_BOX_W (uint8_t)(BG_PANEL_SIZE_W * 2 / 3)
 #define DAY_FORECAST_OUT_BOX_H WEATHER_CONTAINER_H
 #define DAY_FORECAST_BOX_W DAY_FORECAST_OUT_BOX_W
-#define DAY_FORECAST_BOX_H 19
+#define DAY_FORECAST_BOX_H 24
 // #define DAY_FORECAST_BOX_H (uint8_t)((DAY_FORECAST_OUT_BOX_H / 5) - (WC_MARGIN_OFFSET * 5))
 
 LV_IMG_DECLARE(w01n);
@@ -73,3 +78,7 @@ void _setHeadingBox(void);
  * Create 5 days box containers and add to the main screen page.
  */
 void _set5DaysForecastBox(void);
+/**
+ * Update weather 5 days forecast information to the main screen page.
+ */
+void _update5DaysForecast(void);
