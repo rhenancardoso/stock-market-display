@@ -66,6 +66,7 @@ void setWeeklyDaysStruct(void);
  *
  */
 void FiveDaysMockData(void);
+void getCuritibaForecast(void);
 
 typedef struct Weather
 {

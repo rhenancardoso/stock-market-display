@@ -73,3 +73,11 @@ Luckily there is an online converter that makes it simpler.
 
 # Troubleshooting
 * Ensure using `lvgl` library version `/release/v8.0`
+
+* The board uses USB as the JTAG upload port. When printing serial port information on USB_CDC_ON_BOOT configuration needs to be turned on. If the port cannot be found when uploading the program or the USB has been used for other functions, the port does not appear. Please enter the upload mode manually.
+
+    - Connect the board via the USB cable
+    - Press and hold the BOOT button , While still pressing the BOOT button, press RST
+    - Release the RST
+    - Release the BOOT button
+    - Upload sketch

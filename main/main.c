@@ -190,8 +190,9 @@ static void extConnTask(void)
         {
             getTodaysForecast();
             getWeeklyForecast();
+            vTaskDelay(WEATHER_UPDATE_MS / portTICK_PERIOD_MS);
         }
-        vTaskDelay(WEATHER_UPDATE_MS / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 

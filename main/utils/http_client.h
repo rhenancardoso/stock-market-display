@@ -17,5 +17,4 @@ cJSON *http_get_JSON_request(char *url);
 /**
  * Raw HTTP request
  */
-char *http_request(char *url);
-esp_err_t _http_event_handler(esp_http_client_event_t *event);
+static char *http_request(char *url);

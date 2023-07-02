@@ -4,7 +4,6 @@ static const char *TAG = "weather";
 
 extern uint8_t convertDaytoInt(char *week_day);
 extern cJSON *http_get_JSON_request(char *url);
-cJSON *weather_http_response;
 struct Weather w_melb;
 struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
 char weather_request[131];
@@ -36,7 +35,6 @@ void pullTodaysForecastJSON(cJSON *root)
     }
     ESP_LOGD(TAG, "Todays forecast JSON -> temp=%.2f; min_t=%.2f; max_t=%.2f; icon=%s", w_melb.temp, w_melb.min_temp, w_melb.max_temp, w_melb.icon);
     w_melb.is_data_collected = true;
-    cJSON_Delete(root);
 }
 
 void pullWeeklyForecastFromJSON(cJSON *root)
@@ -56,7 +54,6 @@ void pullWeeklyForecastFromJSON(cJSON *root)
     }
 
     ESP_LOGD(TAG, "weekly forecast JSON extracted");
-    cJSON_Delete(root);
 }
 
 void getTodaysForecast(void)
@@ -64,33 +61,51 @@ void getTodaysForecast(void)
     ESP_LOGI(TAG, "Get Today's weather forecast");
     setWeeklyDaysStruct();
     sprintf(weather_request, API_URL, CITY_LAT, CITY_LON, API_KEY);
-    weather_http_response = http_get_JSON_request(weather_request);
-    if (weather_http_response != NULL)
+    cJSON *http_api_response = http_get_JSON_request(weather_request);
+    if (http_api_response != NULL)
     {
         ESP_LOGI(TAG, "weather response ready");
-        pullTodaysForecastJSON(weather_http_response);
+        pullTodaysForecastJSON(http_api_response);
     }
     else
     {
         w_melb.is_data_collected = false;
         ESP_LOGE(TAG, "null weather API response");
     }
+    cJSON_Delete(http_api_response);
+}
+
+void getCuritibaForecast(void)
+{
+    ESP_LOGI(TAG, "Get Curitiba's weather forecast");
+    sprintf(weather_request, API_URL, "-25.441105", "-49.276855", API_KEY);
+    cJSON *http_api_response = http_get_JSON_request(weather_request);
+    if (http_api_response != NULL)
+    {
+        ESP_LOGI(TAG, "Curitiba weather response ready");
+    }
+    else
+    {
+        ESP_LOGE(TAG, "null Curitiba weather API response");
+    }
+    cJSON_Delete(http_api_response);
 }
 
 void getWeeklyForecast(void)
 {
     ESP_LOGI(TAG, "Get weekly's weather forecast");
     sprintf(weekly_weather_request, BIT_API_URL, CITY, COUNTRY, BIT_API_KEY, DAYS_FORECAST);
-    weather_http_response = http_get_JSON_request(weekly_weather_request);
-    if (weather_http_response != NULL)
+    cJSON *http_api_response = http_get_JSON_request(weekly_weather_request);
+    if (http_api_response != NULL)
     {
         ESP_LOGI(TAG, "weekly forecast response ready");
-        pullWeeklyForecastFromJSON(weather_http_response);
+        pullWeeklyForecastFromJSON(http_api_response);
     }
     else
     {
         ESP_LOGE(TAG, "null weekly forecast API response");
     }
+    cJSON_Delete(http_api_response);
 }
 
 void setWeeklyDaysStruct(void)
