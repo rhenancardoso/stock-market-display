@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: CC0-1.0
  */
-
 #include <stdio.h>
+#include <time.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_timer.h"
@@ -25,6 +25,7 @@ static const char *TAG = "main.c";
 
 extern void set_time(void);
 extern struct Wifi wifi_conn;
+extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
 
@@ -177,6 +178,24 @@ static void displayTask(void)
     }
 }
 
+static void periodic_weekly_forecast_timer(void *arg)
+{
+    if (wifi_conn.is_connected)
+    {
+        ESP_LOGI(TAG, "Weekly timer called");
+        getWeeklyForecast();
+    }
+}
+
+static void periodic_daily_forecast_timer(void *arg)
+{
+    if (wifi_conn.is_connected)
+    {
+        ESP_LOGI(TAG, "Today timer called");
+        getTodaysForecast();
+    }
+}
+
 static void extConnTask(void)
 {
     static const char *TAG = "extConnTask";
@@ -184,15 +203,38 @@ static void extConnTask(void)
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
     set_time();
+    long int last_time_weekly = clock();
+    long int last_time_daily = clock();
+    long int time_now;
+    bool first_request_complete = false;
     while (1)
     {
+        time_now = clock();
         if (wifi_conn.is_connected)
         {
-            getTodaysForecast();
-            getWeeklyForecast();
-            vTaskDelay(WEATHER_UPDATE_MS / portTICK_PERIOD_MS);
+            if (!first_request_complete)
+            {
+                getTodaysForecast();
+                getWeeklyForecast();
+                first_request_complete = true;
+            }
+            else
+            {
+                if ((time_now - last_time_daily) >= TODAYS_UPDATE_MS)
+                {
+                    ESP_LOGI(TAG, "Todays tick count = %ld", (time_now - last_time_daily));
+                    getTodaysForecast();
+                    last_time_daily = clock();
+                }
+                if ((time_now - last_time_weekly) >= WEEKLY_UPDATE_MS)
+                {
+                    ESP_LOGI(TAG, "Weekly tick count = %ld", (time_now - last_time_weekly));
+                    getWeeklyForecast();
+                    last_time_weekly = clock();
+                }
+            }
         }
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 

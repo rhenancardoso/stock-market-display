@@ -206,7 +206,7 @@ void _update5DaysForecast(void)
         // Update period after first screen initialisation
         if (timer_forecast_containers->period == TIMER_PERIOD + 10)
         {
-            timer_forecast_containers->period = WEATHER_UPDATE_MS;
+            timer_forecast_containers->period = WEEKLY_UPDATE_MS;
         }
     }
     else

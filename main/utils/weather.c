@@ -46,8 +46,8 @@ void pullWeeklyForecastFromJSON(cJSON *root)
     {
         cJSON *elem;
         elem = cJSON_GetArrayItem(data, i);
-        weeklyForecast[i].min_temp = cJSON_GetObjectItemCaseSensitive(elem, "temp_min")->valuedouble;
-        weeklyForecast[i].max_temp = cJSON_GetObjectItemCaseSensitive(elem, "temp_max")->valuedouble;
+        weeklyForecast[i].min_temp = cJSON_GetObjectItemCaseSensitive(elem, "min_temp")->valuedouble;
+        weeklyForecast[i].max_temp = cJSON_GetObjectItemCaseSensitive(elem, "max_temp")->valuedouble;
         cJSON *weather = cJSON_GetObjectItemCaseSensitive(elem, "weather");
         weeklyForecast[i].icon_code = cJSON_GetObjectItemCaseSensitive(weather, "code")->valueint;
         ESP_LOGD(TAG, "weekly forecast JSON -> ind=%d; min_t=%.0f; max_t=%.0f, ; icon=%d", i, weeklyForecast[i].min_temp, weeklyForecast[i].max_temp, weeklyForecast[i].icon_code);
@@ -71,22 +71,6 @@ void getTodaysForecast(void)
     {
         w_melb.is_data_collected = false;
         ESP_LOGE(TAG, "null weather API response");
-    }
-    cJSON_Delete(http_api_response);
-}
-
-void getCuritibaForecast(void)
-{
-    ESP_LOGI(TAG, "Get Curitiba's weather forecast");
-    sprintf(weather_request, API_URL, "-25.441105", "-49.276855", API_KEY);
-    cJSON *http_api_response = http_get_JSON_request(weather_request);
-    if (http_api_response != NULL)
-    {
-        ESP_LOGI(TAG, "Curitiba weather response ready");
-    }
-    else
-    {
-        ESP_LOGE(TAG, "null Curitiba weather API response");
     }
     cJSON_Delete(http_api_response);
 }

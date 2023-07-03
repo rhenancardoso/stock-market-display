@@ -5,7 +5,7 @@
 #include "esp_log.h"
 #include "cJSON.h"
 
-#define MAX_HTTP_OUTPUT_BUFFER 2048
+#define MAX_HTTP_OUTPUT_BUFFER 4500
 #define _TIMEOUT 10
 
 /**
@@ -17,4 +17,4 @@ cJSON *http_get_JSON_request(char *url);
 /**
  * Raw HTTP request
  */
-static char *http_request(char *url);
+void http_request(char *url);

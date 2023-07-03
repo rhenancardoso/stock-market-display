@@ -2,10 +2,11 @@
 
 static const char *TAG = "http_client";
 
-char *http_request(char *url)
+static cJSON *json;
+
+void http_request(char *url)
 {
     char output_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0}; // Buffer to store response of http request
-    char *response_data = NULL;
 
     esp_http_client_config_t config = {
         .url = url,
@@ -37,36 +38,35 @@ char *http_request(char *url)
                 ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
                          esp_http_client_get_status_code(client),
                          content_length);
-                response_data = output_buffer;
+
+                ESP_LOGI(TAG, "Parsing JSON");
+                ESP_LOGI(TAG, "HTTP http_response buffer cJSON Parse: %s", output_buffer);
+                json = cJSON_Parse(output_buffer);
+                if (json == NULL)
+                {
+                    ESP_LOGE(TAG, "JSON error: %s", cJSON_GetErrorPtr());
+                }
+                else
+                {
+                    // char *out = cJSON_Print(json);
+                    // ESP_LOGI(TAG, "JSON response: %s", out);
+                    // free(out);
+                    ESP_LOGI(TAG, "JSON response parsed");
+                }
             }
             else
             {
+                json = NULL;
                 ESP_LOGE(TAG, "Failed to read response");
             }
         }
     }
     esp_http_client_close(client);
-    ESP_LOGI(TAG, "HTTP output_buffer: %s", response_data);
-    return response_data;
 }
 
 cJSON *http_get_JSON_request(char *url)
 {
     ESP_LOGI(TAG, "HTTP JSON request");
-    char *http_response = http_request(url);
-    ESP_LOGI(TAG, "HTTP response is NULL? %s", (http_response == NULL) ? "true" : "false");
-    if (http_response)
-    {
-        ESP_LOGI(TAG, "Parsing JSON");
-        cJSON *json = cJSON_Parse(http_response);
-        if (json == NULL)
-        {
-            ESP_LOGE(TAG, "JSON error: %s", cJSON_GetErrorPtr());
-        }
-        char *out = cJSON_Print(json);
-        ESP_LOGI(TAG, "JSON response: %s", out);
-        free(out);
-        return json;
-    }
-    return NULL;
+    http_request(url);
+    return json;
 }
