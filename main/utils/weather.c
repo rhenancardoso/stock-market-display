@@ -33,7 +33,7 @@ void pullTodaysForecastJSON(cJSON *root)
             w_melb.icon[2] = 'n';
         }
     }
-    ESP_LOGD(TAG, "Todays forecast JSON -> temp=%.2f; min_t=%.2f; max_t=%.2f; icon=%s", w_melb.temp, w_melb.min_temp, w_melb.max_temp, w_melb.icon);
+    ESP_LOGI(TAG, "Todays forecast JSON -> temp=%.2f; min_t=%.2f; max_t=%.2f; icon=%s", w_melb.temp, w_melb.min_temp, w_melb.max_temp, w_melb.icon);
     w_melb.is_data_collected = true;
 }
 
@@ -50,10 +50,10 @@ void pullWeeklyForecastFromJSON(cJSON *root)
         weeklyForecast[i].max_temp = cJSON_GetObjectItemCaseSensitive(elem, "max_temp")->valuedouble;
         cJSON *weather = cJSON_GetObjectItemCaseSensitive(elem, "weather");
         weeklyForecast[i].icon_code = cJSON_GetObjectItemCaseSensitive(weather, "code")->valueint;
-        ESP_LOGD(TAG, "weekly forecast JSON -> ind=%d; min_t=%.0f; max_t=%.0f, ; icon=%d", i, weeklyForecast[i].min_temp, weeklyForecast[i].max_temp, weeklyForecast[i].icon_code);
+        ESP_LOGI(TAG, "weekly forecast JSON -> ind=%d; min_t=%.0f; max_t=%.0f, ; icon=%d", i, weeklyForecast[i].min_temp, weeklyForecast[i].max_temp, weeklyForecast[i].icon_code);
     }
 
-    ESP_LOGD(TAG, "weekly forecast JSON extracted");
+    ESP_LOGI(TAG, "weekly forecast JSON extracted");
 }
 
 void getTodaysForecast(void)
@@ -113,7 +113,6 @@ void setWeeklyDaysStruct(void)
 
 void setWeatherIconImg(char icon[4], lv_obj_t *icon_img)
 {
-    ESP_LOGD(TAG, "Set weather icon image. icon: %s", icon);
     if (strcmp(icon, "01d") == 0)
     {
         lv_img_set_src(icon_img, &w01d);
@@ -235,40 +234,5 @@ void setWeeklyForecastIconImg(int icon_code, lv_obj_t *icon_img)
     else if ((icon_code >= 200 && icon_code <= 233))
     {
         lv_img_set_src(icon_img, &w11n);
-    }
-}
-
-void FiveDaysMockData(void)
-{
-    ESP_LOGD(TAG, "Create mock data for 5Days forecast.");
-
-    // case (1):
-    weeklyForecast[1].min_temp = 9.2;
-    weeklyForecast[1].max_temp = 27.7;
-    weeklyForecast[1].icon_code = 741;
-    // case (2):
-    weeklyForecast[2].min_temp = 7.5;
-    weeklyForecast[2].max_temp = 12.9;
-    weeklyForecast[2].icon_code = 520;
-    // case (3):
-    weeklyForecast[3].min_temp = 14;
-    weeklyForecast[3].max_temp = 22;
-    weeklyForecast[3].icon_code = 202;
-    // case (4):
-    weeklyForecast[4].min_temp = 17;
-    weeklyForecast[4].max_temp = 32;
-    weeklyForecast[4].icon_code = 803;
-    // case (5):
-    weeklyForecast[5].min_temp = 2;
-    weeklyForecast[5].max_temp = 9;
-    weeklyForecast[5].icon_code = 804;
-
-    for (uint8_t i = 0; i < DAYS_FORECAST; i++)
-    {
-        ESP_LOGI(TAG, "Data index %d-> min_temp: %.2f, max_temp: %.2f, icon_code: %d",
-                 i,
-                 weeklyForecast[i].min_temp,
-                 weeklyForecast[i].max_temp,
-                 weeklyForecast[i].icon_code);
     }
 }

@@ -48,9 +48,6 @@ void http_request(char *url)
                 }
                 else
                 {
-                    // char *out = cJSON_Print(json);
-                    // ESP_LOGI(TAG, "JSON response: %s", out);
-                    // free(out);
                     ESP_LOGI(TAG, "JSON response parsed");
                 }
             }

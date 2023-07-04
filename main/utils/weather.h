@@ -17,9 +17,9 @@
 #define CITY_LON "144.9631608"
 #define API_KEY WEATHER_API_KEY
 #define BIT_API_KEY WEATHERBIT_API_KEY
-#define DAYS_FORECAST 6                 // Includes 'today'
-#define WEEKLY_UPDATE_MS 35 * 60 * 1000 // Every 35 minutes, as Weatherbit Api can handle 50 calls/day
-#define TODAYS_UPDATE_MS 2 * 60 * 1000  // Every 2 minutes as OpenWeatherApi can handle 1000 calls/day
+#define DAYS_FORECAST 6                     // Includes 'today'
+#define WEEKLY_UPDATE_MS 2 * 60 * 60 * 1000 // 5 days update every 2 hours, as Weatherbit Api can handle 50 calls/day
+#define TODAYS_UPDATE_MS 2 * 60 * 1000      // Today's update every 2 minutes as OpenWeatherApi can handle 1000 calls/day
 
 LV_IMG_DECLARE(w01n);
 LV_IMG_DECLARE(w01d);

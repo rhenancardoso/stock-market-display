@@ -162,7 +162,6 @@ void _update5DaysForecast(void)
     // Weather
     if (w_melb.is_data_collected)
     {
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
         ESP_LOGD(TAG, "Update weather info in forecast containers");
         for (uint8_t i = 1; i < DAYS_FORECAST; i++)
         {
@@ -211,7 +210,7 @@ void _update5DaysForecast(void)
     }
     else
     {
-        ESP_LOGW(TAG, "Data not collected");
+        ESP_LOGD(TAG, "Data not collected");
         lv_label_set_text(day1_day_wk, convertInttoStr(weeklyForecast[1].week_day));
         lv_label_set_text(day1_min, "--°C");
         lv_label_set_text(day1_max, "--°C");
