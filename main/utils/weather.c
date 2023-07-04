@@ -51,8 +51,8 @@ void pullWeeklyForecastFromJSON(cJSON *root)
         cJSON *weather = cJSON_GetObjectItemCaseSensitive(elem, "weather");
         weeklyForecast[i].icon_code = cJSON_GetObjectItemCaseSensitive(weather, "code")->valueint;
         ESP_LOGI(TAG, "weekly forecast JSON -> ind=%d; min_t=%.0f; max_t=%.0f, ; icon=%d", i, weeklyForecast[i].min_temp, weeklyForecast[i].max_temp, weeklyForecast[i].icon_code);
+        weeklyForecast[i].is_data_collected = true;
     }
-
     ESP_LOGI(TAG, "weekly forecast JSON extracted");
 }
 

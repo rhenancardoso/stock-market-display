@@ -160,7 +160,7 @@ void _updateMainPage(lv_timer_t *timer)
 void _update5DaysForecast(void)
 {
     // Weather
-    if (w_melb.is_data_collected)
+    if (weeklyForecast[0].is_data_collected)
     {
         ESP_LOGD(TAG, "Update weather info in forecast containers");
         for (uint8_t i = 1; i < DAYS_FORECAST; i++)

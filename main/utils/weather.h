@@ -79,4 +79,5 @@ typedef struct WeeklyForecast
     float min_temp;
     float max_temp;
     int icon_code;
+    bool is_data_collected;
 };
