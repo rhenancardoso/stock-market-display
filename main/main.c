@@ -7,7 +7,7 @@
 #include "lvgl.h"
 #include "utils/weather.h"
 #include "utils/wifi.h"
-#include "display_screen/display_screen.h"
+#include "display_screen/home_screen.h"
 
 static const char *TAG = "main.c";
 
@@ -15,6 +15,8 @@ extern struct Wifi wifi_conn;
 extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
 extern void initialise_lcd(lv_disp_t *disp);
 extern void set_time(void);
+static void displayTask(void);
+static void extConnTask(void);
 
 void app_main()
 {

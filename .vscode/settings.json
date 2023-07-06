@@ -15,6 +15,6 @@
         "key_config.h": "c",
         "lvgl.h": "c",
         "wifi.h": "c",
-        "display_screen.h": "c"
+        "home_screen.h": "c"
     },
 }

@@ -10,7 +10,7 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "config.h"
-#include "../display_screen/display_screen.h"
+#include "../display_screen/home_screen.h"
 
 static const char *TAG = "display_init";
 

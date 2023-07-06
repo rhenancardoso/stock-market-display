@@ -7,7 +7,10 @@
 #include "../key_config.h"
 #include "lvgl.h"
 #include "time.h"
-#include "../display_screen/display_screen.h"
+#include "../display_screen/home_screen.h"
+
+#ifndef _WEATHER_H_
+#define _WEATHER_H_
 
 #define API_URL "http://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric"
 #define BIT_API_URL "http://api.weatherbit.io/v2.0/forecast/daily?city=%s&country=%s&key=%s&days=%d"
@@ -20,6 +23,8 @@
 #define DAYS_FORECAST 6                     // Includes 'today'
 #define WEEKLY_UPDATE_MS 2 * 60 * 60 * 1000 // 5 days update every 2 hours, as Weatherbit Api can handle 50 calls/day
 #define TODAYS_UPDATE_MS 2 * 60 * 1000      // Today's update every 2 minutes as OpenWeatherApi can handle 1000 calls/day
+
+#endif
 
 LV_IMG_DECLARE(w01n);
 LV_IMG_DECLARE(w01d);
