@@ -8,11 +8,15 @@
 #include "utils/weather.h"
 #include "utils/wifi.h"
 #include "display_screen/home_screen.h"
+#include "display_screen/wifi_conn_scr.h"
 
 static const char *TAG = "main.c";
 
+extern lv_obj_t *home_page;
+extern lv_obj_t *wifi_conn_page;
 extern struct Wifi wifi_conn;
 extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
+bool first_request_complete = false;
 extern void initialise_lcd(lv_disp_t *disp);
 extern void set_time(void);
 static void displayTask(void);
@@ -34,10 +38,16 @@ static void displayTask(void)
 
     // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
     ESP_LOGI(TAG, "Display main UI");
-    main_screen_ui();
     ESP_LOGI(TAG, "While loop");
+    main_screen_ui();
+    wifi_conn_screen_ui();
+    lv_scr_load(wifi_conn_page);
     while (1)
     {
+        if (first_request_complete)
+        {
+            lv_scr_load(home_page);
+        }
         // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
         lv_tick_inc(5);
         lv_timer_handler();
@@ -55,7 +65,6 @@ static void extConnTask(void)
     long int last_time_weekly = clock();
     long int last_time_daily = clock();
     long int time_now;
-    bool first_request_complete = false;
     weeklyForecast[0].is_data_collected = false; // this is used ot check if the weekly data has been retrieved for the first time, before changing its timer period.
 
     while (1)

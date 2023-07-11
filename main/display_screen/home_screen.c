@@ -92,7 +92,6 @@ void main_screen_ui(void)
     // Add weather forecast boxes
     _set5DaysForecastBox();
 
-    lv_scr_load(home_page);
     ESP_LOGD(TAG, "Create 'timer_update_weather_box' timer with %dms period", TIMER_PERIOD);
     timer_update_weather_box = lv_timer_create(_updateMainPage, TIMER_PERIOD, NULL);
     timer_update_weather_box->repeat_count = -1;
