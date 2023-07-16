@@ -11,10 +11,12 @@
 #include "lvgl.h"
 #include "config.h"
 #include "../display_screen/home_screen.h"
+#include "driver/ledc.h"
 
 static const char *TAG = "display_init";
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
+ledc_channel_config_t lcd_bright;
 
 static lv_disp_drv_t disp_drv;      // contains callback functions
 static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
@@ -23,9 +25,11 @@ static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t 
 static void increase_lvgl_tick(void *arg);
 static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
 void initialise_lcd(lv_disp_t *disp);
+ledc_timer_config_t lcd_brigtht_timer;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
+static bool
+notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
     lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
     lv_disp_flush_ready(disp_driver);
@@ -143,4 +147,22 @@ void initialise_lcd(lv_disp_t *disp)
     disp = lv_disp_drv_register(&disp_drv);
     disp->bg_color = lv_color_white();
     disp->bg_opa = LV_OPA_100;
+
+    // Configure LCD brightness
+    ledc_timer_config_t lcd_bright_timer = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .timer_num = LEDC_TIMER_0,
+        .duty_resolution = LEDC_TIMER_8_BIT,
+        .freq_hz = 1000,
+        .clk_cfg = LEDC_AUTO_CLK};
+    ESP_ERROR_CHECK(ledc_timer_config(&lcd_bright_timer));
+    ledc_channel_config_t lcd_bright = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_0,
+        .timer_sel = LEDC_TIMER_0,
+        .intr_type = LEDC_INTR_DISABLE,
+        .gpio_num = PIN_LCD_BL,
+        .duty = 0, // Set duty to 0%
+        .hpoint = 0};
+    ESP_ERROR_CHECK(ledc_channel_config(&lcd_bright));
 }

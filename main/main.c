@@ -9,6 +9,13 @@
 #include "utils/wifi.h"
 #include "display_screen/home_screen.h"
 #include "display_screen/wifi_conn_scr.h"
+#include "driver/ledc.h"
+#include "driver/gpio.h"
+
+#define BTN_DIV 5
+#define BRIGHTNESS_8BITS_5DIV (uint8_t)(255 / BTN_DIV)
+#define BTN_BRIGHT 14
+#define BTN_PRESSED 0
 
 static const char *TAG = "main.c";
 
@@ -16,16 +23,21 @@ extern lv_obj_t *home_page;
 extern lv_obj_t *wifi_conn_page;
 extern struct Wifi wifi_conn;
 extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
+extern ledc_channel_config_t lcd_bright;
+uint8_t lcd_bright_btn = 1;
+
 bool first_request_complete = false;
 extern void initialise_lcd(lv_disp_t *disp);
 extern void set_time(void);
 static void displayTask(void);
 static void extConnTask(void);
+void read_bright_btn(void);
+void set_display_brigthness(void);
 
 void app_main()
 {
     xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 50000, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(extConnTask, "extConnection", 10000, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(extConnTask, "extConnection", 20000, NULL, 1, NULL, 0);
 }
 
 static void displayTask(void)
@@ -36,6 +48,7 @@ static void displayTask(void)
     lv_disp_t *disp;
     initialise_lcd(&disp);
 
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (lcd_bright_btn * BRIGHTNESS_8BITS_5DIV));
     // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
     ESP_LOGI(TAG, "Display main UI");
     ESP_LOGI(TAG, "While loop");
@@ -44,6 +57,7 @@ static void displayTask(void)
     lv_scr_load(wifi_conn_page);
     while (1)
     {
+        set_display_brigthness();
         if (first_request_complete)
         {
             lv_scr_load(home_page);
@@ -66,7 +80,8 @@ static void extConnTask(void)
     long int last_time_daily = clock();
     long int time_now;
     weeklyForecast[0].is_data_collected = false; // this is used ot check if the weekly data has been retrieved for the first time, before changing its timer period.
-
+    gpio_set_direction(BTN_BRIGHT, GPIO_MODE_INPUT);
+    lcd_bright_btn = 1;
     while (1)
     {
         time_now = clock();
@@ -94,6 +109,35 @@ static void extConnTask(void)
                 }
             }
         }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        if (gpio_get_level(BTN_BRIGHT) == BTN_PRESSED)
+        {
+            read_bright_btn();
+        }
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
+}
+
+/**
+ * @brief Read when the BRIGHT button (KEY) is pressed and update lcd_bright_btn variable.
+ */
+void read_bright_btn(void)
+{
+    while (gpio_get_level(BTN_BRIGHT) == BTN_PRESSED)
+    {
+        // Filter btn noise, in case it is long pressed or flaky signal
+    }
+    lcd_bright_btn++;
+    if (lcd_bright_btn > BTN_DIV)
+        lcd_bright_btn = 1;
+    ESP_LOGI(TAG, "Key button pressed. lcd_bright: %d", lcd_bright_btn);
+    ESP_LOGI(TAG, "brightnnes 8-bit value: %d", lcd_bright_btn * BRIGHTNESS_8BITS_5DIV);
+}
+
+/**
+ * @brief Set the display brigthness based on lcd_bright_btn variable.
+ */
+void set_display_brigthness(void)
+{
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (lcd_bright_btn * BRIGHTNESS_8BITS_5DIV));
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 }

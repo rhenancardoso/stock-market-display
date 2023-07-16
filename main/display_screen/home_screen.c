@@ -280,7 +280,7 @@ void _setWeatherBox(void)
     // Temp label
     lv_style_init(&weather_style);
     lv_style_set_text_color(&weather_style, CL_STEEL_BLUE);
-    lv_style_set_text_font(&weather_style, &lv_font_montserrat_18);
+    lv_style_set_text_font(&weather_style, &lv_font_montserrat_20);
     weather_lbl = lv_label_create(weather_icon_frame);
     lv_obj_add_style(weather_lbl, &weather_style, 0);
     lv_obj_align(weather_lbl, LV_ALIGN_TOP_MID, 0, 0);
@@ -317,7 +317,7 @@ void _set5DaysForecastBox(void)
     static lv_style_t box_day_txt_style;
     lv_style_init(&box_day_txt_style);
     lv_style_set_text_color(&box_day_txt_style, CL_STEEL_BLUE);
-    lv_style_set_text_font(&box_day_txt_style, &lv_font_montserrat_14);
+    lv_style_set_text_font(&box_day_txt_style, &lv_font_montserrat_16);
     int box_pos_y;
 
     for (uint8_t i = 0; i < 5; i++)
