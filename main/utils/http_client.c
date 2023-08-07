@@ -58,7 +58,7 @@ void http_request(char *url)
             }
         }
     }
-    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
 }
 
 cJSON *http_get_JSON_request(char *url)
