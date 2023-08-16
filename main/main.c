@@ -6,6 +6,7 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "utils/weather.h"
+#include "utils/stock_api.h"
 #include "utils/wifi.h"
 #include "display_screen/home_screen.h"
 #include "display_screen/wifi_conn_scr.h"
@@ -78,6 +79,7 @@ static void extConnTask(void)
     set_time();
     long int last_time_weekly = clock();
     long int last_time_daily = clock();
+    long int last_time_heap_size = clock();
     long int time_now;
     weeklyForecast[0].is_data_collected = false; // this is used ot check if the weekly data has been retrieved for the first time, before changing its timer period.
     gpio_set_direction(BTN_BRIGHT, GPIO_MODE_INPUT);
@@ -111,7 +113,13 @@ static void extConnTask(void)
         }
         if (gpio_get_level(BTN_BRIGHT) == BTN_PRESSED)
         {
+            getStockData();
             read_bright_btn();
+        }
+        if ((time_now - last_time_heap_size) > 1000)
+        {
+            ESP_LOGI(TAG, "Free Heap: %u bytes", xPortGetFreeHeapSize());
+            last_time_heap_size = clock();
         }
         vTaskDelay(50 / portTICK_PERIOD_MS);
     }
