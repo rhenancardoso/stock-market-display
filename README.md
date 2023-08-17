@@ -70,6 +70,12 @@ Luckily there is an online converter that makes it simpler.
         search for a variable declaration using `const lv_img_dsc_t`.
         In the header file, declar the image using `LV_IMG_DECLARE(<variable-name>)`.
 ```
+# 2.5 Google Sheets API - Stock Market spreadsheet
+An easy method for getting stock-market data is to use a google spreadsheet using google-finance formulas
+to get live stock market data. 
+
+## 2.5.1 Develpoing an WebApp in Google Sheets
+for more: https://developers.google.com/apps-script/guides/web
 
 # Troubleshooting
 * Ensure using `lvgl` library version `/release/v8.0`

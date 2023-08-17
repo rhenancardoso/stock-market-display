@@ -8,6 +8,7 @@
 
 #define MAX_HTTP_OUTPUT_BUFFER 4500
 #define _TIMEOUT 10
+#define RESPONSE_CHAR_REM_SIZE 99
 
 /**
  * Extract JSON data object from HTTP request
@@ -19,3 +20,17 @@ cJSON *http_get_JSON_request(char *url);
  * Raw HTTP request
  */
 void http_request(char *url);
+/**
+ * Raw HTTP request for the Google Sheets web app
+ */
+void http_request_stock(char *url);
+/**
+ * @brief Event handler for the HTTP requests
+ *
+ */
+esp_err_t _http_event_handler(esp_http_client_event_t *evt);
+/**
+ * @brief Remove characteres from buffer_output
+ *
+ */
+void removeString(int startIndex, int countToRemove);

@@ -7,7 +7,8 @@
 
 #ifndef _STOCK_API_H_
 #define _STOCK_API_H_
-#define STOCK_WEB_API "https://script.google.com/macros/s/AKfycbxCoJvtC2REGZ9nJr7A0dHZtbSCQ4jetiDvbBjMzxPbBzAcBgp09cd82EpxHdq2fISn/exec?read"
+#define STOCK_REQUEST_URL "https://script.google.com/macros/s/%s/exec?read=null"
+#define STOCK_REQUEST_URL_EODHD "https://eodhd.com/api/real-time/%s?fmt=json&&api_token=%s"
 #endif
 
 void getStockData(void);
