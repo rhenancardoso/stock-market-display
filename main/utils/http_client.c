@@ -104,6 +104,13 @@ esp_err_t _http_stock_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
+cJSON *http_get_portfolio_request(char *url)
+{
+    ESP_LOGI(TAG, "HTTP JSON request");
+    http_request_stock(url);
+    return stock_json;
+}
+
 void http_request_stock(char *url)
 {
     buffer_output = (char *)malloc(MAX_HTTP_OUTPUT_BUFFER);
@@ -115,7 +122,6 @@ void http_request_stock(char *url)
         .method = HTTP_METHOD_GET,
         .max_redirection_count = 3,
     };
-
     // Create an HTTP client
     esp_http_client_handle_t client = esp_http_client_init(&config);
     //  Perform the HTTP GET request
@@ -123,6 +129,7 @@ void http_request_stock(char *url)
 
     if (err != ESP_OK)
     {
+        stock_json = NULL;
         ESP_LOGE(TAG, "HTTP request failed: %s", esp_err_to_name(err));
     }
     else
@@ -134,12 +141,13 @@ void http_request_stock(char *url)
                  esp_http_client_get_content_length(client));
         removeString(0, RESPONSE_CHAR_REM_SIZE);
         stock_json = cJSON_Parse(response_output);
-        printf("cJSON Print: %s", cJSON_Print(stock_json));
-        //  Free memory used for the response buffer
-        cJSON_Delete(stock_json);
     }
-
-    free(buffer_output);
+    if (buffer_output != NULL)
+    {
+        ESP_LOGI(TAG, "Release buffer_output memory allocation via `free`");
+        // Free memory used for the response buffer
+        free(buffer_output);
+    }
     // Clean up the client
     esp_http_client_close(client);
     esp_http_client_cleanup(client);
@@ -147,6 +155,7 @@ void http_request_stock(char *url)
 
 void removeString(int startIndex, int countToRemove)
 {
+    ESP_LOGI(TAG, "Removing heading string from stock response");
     int strLen = strlen(buffer_output);
 
     if (startIndex < 0 || startIndex >= strLen || countToRemove <= 0)
