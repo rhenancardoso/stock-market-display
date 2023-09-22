@@ -16,6 +16,7 @@
         "lvgl.h": "c",
         "wifi.h": "c",
         "home_screen.h": "c",
-        "stock_api.h": "c"
+        "stock_api.h": "c",
+        "stock_screen.h": "c"
     },
 }

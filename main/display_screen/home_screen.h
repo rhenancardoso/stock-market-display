@@ -1,10 +1,10 @@
 #include "lvgl.h"
 #include "display_config.h"
 
+#ifndef _HOME_SCREEN_H_
+#define _HOME_SCREEN_H_
 #define TIMER_PERIOD (uint8_t)50
-#define FORECAST_TICK_CNT (uint32_t)3600000 / TIMER_PERIOD
-#define ZERO_TICK 0b0
-#define FIRST_TICK 0b1
+#define WEATHER_SCREEN_MS 7 * 1000 // Weather's screen displays every 7 seconds
 
 // Containers size def - - - - - - - - - - - - - - - - - - -
 #define HEADING_W EXAMPLE_LCD_H_RES
@@ -18,7 +18,8 @@
 #define DAY_FORECAST_OUT_BOX_H WEATHER_CONTAINER_H
 #define DAY_FORECAST_BOX_W DAY_FORECAST_OUT_BOX_W
 #define DAY_FORECAST_BOX_H 24
-// #define DAY_FORECAST_BOX_H (uint8_t)((DAY_FORECAST_OUT_BOX_H / 5) - (WC_MARGIN_OFFSET * 5))
+
+#endif
 
 /**
  * Configure objects for the main screen page.

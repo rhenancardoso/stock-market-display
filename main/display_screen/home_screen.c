@@ -4,6 +4,7 @@
 #include "esp_log.h"
 #include "home_screen.h"
 #include "../utils/wifi.h"
+#include "shared/heading_view.h"
 #include "../utils/weather.h"
 
 #define INITIAL_5DAYS_TIMER_MS (TIMER_PERIOD + 10)
@@ -16,14 +17,10 @@ extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
 
 extern char *convertInttoStr(uint8_t week_day);
 
-static lv_style_t time_style;
-static lv_style_t weather_style;
-static lv_style_t battery_style;
 static lv_style_t weather_frame_style;
 static lv_style_t day_forecast_style;
+static lv_style_t weather_style;
 lv_obj_t *home_page;
-lv_obj_t *time_lbl;
-lv_obj_t *battery_lbl;
 lv_obj_t *weather_lbl;
 lv_obj_t *weather_icon_img;
 lv_obj_t *weather_icon_img_rpt;
@@ -55,9 +52,7 @@ lv_obj_t *forecast_box;
 
 lv_timer_t *timer_update_weather_box;
 lv_timer_t *timer_forecast_containers;
-char str_clock[9];
 char str_weather[5];
-char str_battery[3];
 uint8_t icon_move_x = 0;
 uint32_t tick_forecast_cnt = 0;
 uint32_t w_icon_width = 0;
@@ -86,7 +81,7 @@ void main_screen_ui(void)
     lv_obj_add_style(home_page_bg, &screen_bg_style, 0);
 
     // Add heading
-    _setHeadingBox();
+    setHeadingBox(home_page);
     // Add weather container
     _setWeatherBox();
     // Add weather forecast boxes
@@ -102,32 +97,8 @@ void main_screen_ui(void)
 
 void _updateMainPage(lv_timer_t *timer)
 {
-    ESP_LOGD(TAG, "Update main page: Heading and Today's weather box");
-    // Get time
-    time_t now;
-    struct tm timeinfo;
-    ESP_LOGD(TAG, "Get system time");
-    time(&now);
-    localtime_r(&now, &timeinfo);
-    strftime(str_clock, sizeof(str_clock), "  %H:%M", &timeinfo);
-    ESP_LOGD(TAG, "Local time is: %s", str_clock);
-    char full_str_CLK[11] = "";
-    if (wifi_conn.is_connected)
-    {
-        ESP_LOGD(TAG, "Wifi connected, copy wifi symbol to clock string");
-        strcpy(full_str_CLK, LV_SYMBOL_WIFI);
-        strcat(full_str_CLK, str_clock);
-    }
-    else
-    {
-        ESP_LOGD(TAG, "Wifi not connected, clock string without wifi icon");
-        strcpy(full_str_CLK, str_clock);
-    }
-    ESP_LOGD(TAG, "Set time label in heading");
-    lv_label_set_text(time_lbl, full_str_CLK);
-    // Battery
-    ESP_LOGD(TAG, "Set battery icon in heading");
-    lv_label_set_text(battery_lbl, LV_SYMBOL_BATTERY_FULL);
+
+    updateHeading(timer);
 
     // Weather
     if (w_melb.is_data_collected)
@@ -226,38 +197,6 @@ void _update5DaysForecast(void)
         lv_label_set_text(day5_min, "--°C");
         lv_label_set_text(day5_max, "--°C");
     }
-}
-
-void _setHeadingBox(void)
-{
-    lv_obj_t *heading_container;
-    static lv_style_t heading_container_style;
-
-    // Create Heading container
-    heading_container = lv_obj_create(home_page);
-    lv_obj_set_scrollbar_mode(heading_container, LV_SCROLLBAR_MODE_OFF);
-    lv_style_init(&heading_container_style);
-    lv_style_set_radius(&heading_container_style, 0);
-    lv_style_set_border_width(&heading_container_style, 0);
-    lv_style_set_bg_color(&heading_container_style, CL_STEEL_BLUE);
-    lv_obj_set_size(heading_container, HEADING_W, HEADING_H);
-    lv_obj_add_style(heading_container, &heading_container_style, 0);
-    // Create hour label object and configure
-    lv_style_init(&time_style);
-    lv_style_set_text_color(&time_style, white_color);
-    lv_style_set_text_font(&time_style, &lv_font_montserrat_16);
-    time_lbl = lv_label_create(heading_container);
-    lv_obj_add_style(time_lbl, &time_style, 0);
-    lv_label_set_text(time_lbl, str_clock);
-    lv_obj_align(time_lbl, LV_ALIGN_RIGHT_MID, 0, 0);
-    // Create temp label object and configure
-    lv_style_init(&battery_style);
-    lv_style_set_text_color(&battery_style, white_color);
-    lv_style_set_text_font(&battery_style, &lv_font_montserrat_16);
-    battery_lbl = lv_label_create(heading_container);
-    lv_obj_add_style(battery_lbl, &battery_style, 0);
-    lv_label_set_text(battery_lbl, str_clock);
-    lv_obj_align(battery_lbl, LV_ALIGN_LEFT_MID, 0, 0);
 }
 
 void _setWeatherBox(void)
