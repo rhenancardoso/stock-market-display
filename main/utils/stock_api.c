@@ -3,7 +3,6 @@
 static const char *TAG = "stock_api";
 
 char stock_url_request[150];
-extern cJSON *http_get_portfolio_request(char *url);
 
 void getStockData(void)
 {

@@ -15,14 +15,14 @@
  * @param url   url end point
  * @return cJSON object
  */
-cJSON *http_get_JSON_request(char *url);
+extern cJSON *http_get_JSON_request(char *url);
 
 /**
  * Extract JSON data object from Stock-Market API HTTP request
  * @param url   url end point
  * @return cJSON object
  */
-cJSON *http_get_portfolio_request(char *url);
+extern cJSON *http_get_portfolio_request(char *url);
 
 /**
  * Raw HTTP request

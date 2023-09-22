@@ -7,7 +7,7 @@
 #include "../key_config.h"
 #include "lvgl.h"
 #include "time.h"
-#include "../display_screen/home_screen.h"
+// #include "utils.c"
 
 #ifndef _WEATHER_H_
 #define _WEATHER_H_
@@ -68,7 +68,7 @@ uint32_t getWeatherIconWidth(char icon[4]);
  */
 void setWeeklyDaysStruct(void);
 
-typedef struct Weather
+typedef struct weather
 {
     float temp;
     uint8_t humidity;
@@ -76,13 +76,16 @@ typedef struct Weather
     float max_temp;
     bool is_data_collected;
     char icon[4];
-};
+} Weather;
 
-typedef struct WeeklyForecast
+typedef struct weeklyForecast
 {
     uint8_t week_day;
     float min_temp;
     float max_temp;
     int icon_code;
     bool is_data_collected;
-};
+} WeeklyForecast;
+
+extern Weather w_melb;
+extern WeeklyForecast weeklyForecast[DAYS_FORECAST];

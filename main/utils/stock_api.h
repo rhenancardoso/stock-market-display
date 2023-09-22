@@ -10,7 +10,7 @@
 #define STOCK_REQUEST_URL "https://script.google.com/macros/s/%s/exec?read=null"
 #define STOCK_REQUEST_URL_EODHD "https://eodhd.com/api/real-time/%s?fmt=json&&api_token=%s"
 #define STOCK_UPDATE_MS 5 * 60 * 1000 // Stock's updated every 5 minutes
-#define STOCK_SCREEN_MS 15 * 1000     // Stock's screen displays every 7 seconds
+#define STOCK_SCREEN_MS 15 * 1000     // Stock's screen displays every 15 seconds
 
 #endif
 

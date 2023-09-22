@@ -1,9 +1,9 @@
 #include "time.h"
 #include "wifi.h"
+
 static const char *TAG = "set-time";
 
 char current_time[100];
-extern struct Wifi wifi_conn;
 
 void time_sync_notification_cb(struct timeval *tv)
 {

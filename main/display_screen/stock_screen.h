@@ -1,5 +1,6 @@
 #include "lvgl.h"
 #include "display_config.h"
+#include "esp_log.h"
 
 #ifndef _STOCK_SCREEN_H_
 #define _STOCK_SCREEN_H_
@@ -17,6 +18,8 @@
 #define STOCK_BOX_H 24
 
 #endif
+
+extern lv_obj_t *stock_page;
 
 /**
  * @brief

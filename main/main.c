@@ -21,11 +21,6 @@
 
 static const char *TAG = "main.c";
 
-extern lv_obj_t *home_page;
-extern lv_obj_t *stock_page;
-extern lv_obj_t *wifi_conn_page;
-extern struct Wifi wifi_conn;
-extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
 extern ledc_channel_config_t lcd_bright;
 uint8_t lcd_bright_btn = 2;
 

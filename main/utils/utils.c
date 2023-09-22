@@ -1,9 +1,12 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 #include "esp_log.h"
 
-static const char *TAG = "utils";
+static const char *TAG_UTILS = "utils";
 
 /**
  * From 3 leter acronym for day of the week, return matching integer
@@ -13,13 +16,13 @@ static const char *TAG = "utils";
  */
 uint8_t convertDaytoInt(char *week_day)
 {
-    ESP_LOGI(TAG, "Convert str Day into Int");
+    ESP_LOGI(TAG_UTILS, "Convert str Day into Int");
     char *upper_case_str = week_day;
     for (int x = 0; x < strlen(upper_case_str); x++)
     {
         upper_case_str[x] = toupper(week_day[x]);
     }
-    ESP_LOGI(TAG, "Day of week uppercase: %s", upper_case_str);
+    ESP_LOGI(TAG_UTILS, "Day of week uppercase: %s", upper_case_str);
 
     if (strcmp(upper_case_str, "MON") == 0)
     {
@@ -80,3 +83,5 @@ char *convertInttoStr(uint8_t week_day)
     }
     return NULL;
 }
+
+#endif

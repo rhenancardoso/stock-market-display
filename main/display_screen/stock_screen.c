@@ -1,4 +1,3 @@
-#include "esp_log.h"
 #include "stock_screen.h"
 #include "../utils/stock_api.h"
 #include "../utils/wifi.h"
@@ -8,7 +7,6 @@
 
 static const char *TAG = "stock_page";
 
-extern struct Wifi wifi_conn;
 Stock *stock_portfolio = NULL;
 
 lv_obj_t *stock_page;

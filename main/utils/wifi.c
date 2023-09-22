@@ -1,28 +1,16 @@
 // WIFI Settings taken from
 // https://github.com/vinothkannan369/ESP32/blob/main/SNTP/set_clk.c
 
-#include <string.h>
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_event_loop.h"
-#include "esp_mac.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include "lwip/err.h"
-#include "lwip/sys.h"
-#include "esp_system.h"
 #include "wifi.h"
+
+Wifi wifi_conn;
 
 static const char *TAG = "wifi-sta";
 static EventGroupHandle_t s_wifi_event_group;
 uint8_t retries;
 void wifi_init_sta(void);
 void initialize_wifi(void);
-struct Wifi wifi_conn;
+
 wifi_config_t wifi_config;
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,

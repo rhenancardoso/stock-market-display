@@ -1,11 +1,13 @@
 #include "weather.h"
+#include "../display_screen/home_screen.h"
+#include "http_client.h"
 
 static const char *TAG = "weather";
 
+Weather w_melb;
+WeeklyForecast weeklyForecast[DAYS_FORECAST];
 extern uint8_t convertDaytoInt(char *week_day);
-extern cJSON *http_get_JSON_request(char *url);
-struct Weather w_melb;
-struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
+
 char weather_request[131];
 char weekly_weather_request[123];
 

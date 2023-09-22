@@ -7,7 +7,6 @@
 
 static const char *TAG = "heading_view";
 
-extern struct Wifi wifi_conn;
 extern void _updateHeading(lv_timer_t *timer);
 
 static lv_style_t time_style;

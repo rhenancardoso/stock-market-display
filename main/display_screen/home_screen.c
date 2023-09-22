@@ -1,19 +1,9 @@
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-#include "esp_log.h"
 #include "home_screen.h"
 #include "../utils/wifi.h"
-#include "shared/heading_view.h"
 #include "../utils/weather.h"
-
-#define INITIAL_5DAYS_TIMER_MS (TIMER_PERIOD + 10)
+#include "shared/heading_view.h"
 
 static const char *TAG = "home_page";
-
-extern struct Wifi wifi_conn;
-extern struct Weather w_melb;
-extern struct WeeklyForecast weeklyForecast[DAYS_FORECAST];
 
 extern char *convertInttoStr(uint8_t week_day);
 

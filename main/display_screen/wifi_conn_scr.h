@@ -3,6 +3,8 @@
 
 #define TIMER_PERIOD (uint8_t)10
 
+extern lv_obj_t *wifi_conn_page;
+
 /**
  * Configure objects for the wifi connection screen page.
  */
