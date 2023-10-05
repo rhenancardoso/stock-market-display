@@ -8,7 +8,7 @@
 #ifndef _HOME_SCREEN_H_
 #define _HOME_SCREEN_H_
 #define TIMER_PERIOD (uint8_t)50
-#define WEATHER_SCREEN_MS 7 * 1000 // Weather's screen displays every 7 seconds
+#define WEATHER_SCREEN_MS 5 * 1000 // Weather's screen displays every 7 seconds
 #define INITIAL_5DAYS_TIMER_MS (TIMER_PERIOD + 10)
 
 // Containers size def - - - - - - - - - - - - - - - - - - -

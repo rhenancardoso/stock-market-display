@@ -1,4 +1,6 @@
 #include "stock_screen.h"
+#include <time.h>
+#include <math.h>
 #include "../utils/stock_api.h"
 #include "../utils/wifi.h"
 #include "shared/heading_view.h"
@@ -6,32 +8,15 @@
 #define INITIAL_STOCK_TIMER_MS (TIMER_PERIOD + 10)
 
 static const char *TAG = "stock_page";
-
+static const int NUM_SHARES = 21; // TODO: read from the stock struct
 Stock *stock_portfolio = NULL;
 
 lv_obj_t *stock_page;
-lv_obj_t *stock_lbl;
-lv_obj_t *stock_box;
-lv_obj_t *stk_name;
-lv_obj_t *stk_price;
-lv_obj_t *stk_pct_change;
-lv_obj_t *stk_name_1;
-lv_obj_t *stk_price_1;
-lv_obj_t *stk_pct_change_1;
-lv_obj_t *stk_name_2;
-lv_obj_t *stk_price_2;
-lv_obj_t *stk_pct_change_2;
-lv_obj_t *stk_name_3;
-lv_obj_t *stk_price_3;
-lv_obj_t *stk_pct_change_3;
-lv_obj_t *stk_name_4;
-lv_obj_t *stk_price_4;
-lv_obj_t *stk_pct_change_4;
-lv_obj_t *stk_name_5;
-lv_obj_t *stk_price_5;
-lv_obj_t *stk_pct_change_5;
-
-lv_timer_t *timer_stock_containers;
+lv_obj_t *stock_outer_box;
+lv_timer_t *timer_stock_data;
+static lv_style_t stock_pct_red_style;
+static lv_style_t stock_pct_blue_style;
+int active_page;
 
 void stock_screen_ui(void)
 {
@@ -56,92 +41,102 @@ void stock_screen_ui(void)
     lv_obj_add_style(stock_page_bg, &screen_bg_style, 0);
 
     // Add heading
-    ESP_LOGI(TAG, "Calling setHeadingBox function");
+    ESP_LOGI(TAG, "Home Screen calling setHeadingBox function");
     setHeadingBox(stock_page);
+    // Add Stock Boxes
+    _createStockBoxes();
 
-    _set5StockBox();
-
-    ESP_LOGD(TAG, "Create 'timer_update_weather_box' timer with %dms period", TIMER_PERIOD_MS);
-    timer_stock_containers = lv_timer_create(_updateStockPage, 50, NULL);
-    timer_stock_containers->repeat_count = -1;
+    ESP_LOGD(TAG, "Create 'timer_update_weather_box' timer with %dms period", 100);
+    timer_stock_data = lv_timer_create(_updateStockData, 100, NULL);
+    timer_stock_data->repeat_count = -1;
 }
 
-void _updateStockPage(lv_timer_t *timer)
+void _updateStockData(lv_timer_t *timer)
 {
-    static lv_style_t stock_pct_style;
-    // Update Heading
-    updateHeading(timer);
-    ESP_LOGI(TAG, "Updating Stock Data");
     if (stock_portfolio != NULL)
     {
-        ESP_LOGI(TAG, "Stock data has been collected, updating stock box display");
-        for (int index = 0; index < 5; index++)
+        if (timer_stock_data->period != PAGE_TIMER_UPDATE_TICK)
         {
-            char stock_name[40] = "";
-            char stock_price[20] = "";
-            char stock_change[10] = "";
-            // Update Todays weather temperature
-            ESP_LOGI(TAG, "Row: %d -> %s\t| A$ %.2f\t| %.2f|", index,
-                     stock_portfolio[index].stk_name,
-                     stock_portfolio[index].stk_price,
-                     stock_portfolio[index].stck_pct_change);
-            sprintf(stock_name, "%s", stock_portfolio[index].stk_name);
-            sprintf(stock_price, "A$ %.2f", stock_portfolio[index].stk_price);
-            sprintf(stock_change, "%.2f", stock_portfolio[index].stck_pct_change);
+            ESP_LOGI(TAG, "changing data period for timer");
+            timer_stock_data->period = PAGE_TIMER_UPDATE_TICK;
+        }
 
-            lv_style_init(&stock_pct_style);
-            if (stock_portfolio[index].stck_pct_change < 0)
+        uint32_t stk_box_cnt = lv_obj_get_child_cnt(stock_outer_box);
+        for (uint8_t ind = 0; ind < stk_box_cnt; ind++)
+        {
+            lv_obj_t *stk_box = lv_obj_get_child(stock_outer_box, ind);
+            uint8_t stock_index = ind + active_page * MAX_BOXES_PER_PAGE;
+            // Update stock data lables
+            char stock_name[25] = "--";
+            char stock_price[15] = "A$ --.--";
+            char stock_change[10] = "-.-- %%";
+            if (stock_index <= NUM_SHARES)
             {
-                lv_style_set_text_color(&stock_pct_style, lv_color_make(255, 90, 25));
+                ESP_LOGI(TAG, "Row: %d -> %s\t\t| A$ %.2f\t| %.2f|", stock_index,
+                         stock_portfolio[stock_index].stk_name,
+                         stock_portfolio[stock_index].stk_price,
+                         stock_portfolio[stock_index].stck_pct_change);
+                sprintf(stock_name, "%s", stock_portfolio[stock_index].stk_name);
+                sprintf(stock_price, "A$ %.2f", stock_portfolio[stock_index].stk_price);
+                sprintf(stock_change, "%.2f %%", stock_portfolio[stock_index].stck_pct_change);
             }
             else
             {
-                lv_style_set_text_color(&stock_pct_style, lv_color_make(25, 90, 255));
+                sprintf(stock_name, stock_name);
+                sprintf(stock_price, stock_price);
+                sprintf(stock_change, stock_change);
             }
 
-            switch (index)
+            uint32_t lbl_cnt = lv_obj_get_child_cnt(stk_box);
+            for (uint8_t lbl_ind = 0; lbl_ind < lbl_cnt; lbl_ind++)
             {
-            case (0):
-                lv_obj_add_style(stk_pct_change, &stock_pct_style, 0);
-                lv_label_set_text(stk_name_1, stock_name);
-                lv_label_set_text(stk_price_1, stock_price);
-                lv_label_set_text(stk_pct_change_1, stock_change);
-            case (1):
-                lv_obj_add_style(stk_pct_change, &stock_pct_style, 0);
-                lv_label_set_text(stk_name_2, stock_name);
-                lv_label_set_text(stk_price_2, stock_price);
-                lv_label_set_text(stk_pct_change_2, stock_change);
-            case (2):
-                lv_obj_add_style(stk_pct_change, &stock_pct_style, 0);
-                lv_label_set_text(stk_name_3, stock_name);
-                lv_label_set_text(stk_price_3, stock_price);
-                lv_label_set_text(stk_pct_change_3, stock_change);
-            case (3):
-                lv_obj_add_style(stk_pct_change, &stock_pct_style, 0);
-                lv_label_set_text(stk_name_4, stock_name);
-                lv_label_set_text(stk_price_4, stock_price);
-                lv_label_set_text(stk_pct_change_4, stock_change);
-            case (4):
-                lv_obj_add_style(stk_pct_change, &stock_pct_style, 0);
-                lv_label_set_text(stk_name_5, stock_name);
-                lv_label_set_text(stk_price_5, stock_price);
-                lv_label_set_text(stk_pct_change_5, stock_change);
+                lv_obj_t *box_lbl = lv_obj_get_child(stk_box, lbl_ind);
+                switch (lbl_ind)
+                {
+                case 0:
+                    lv_label_set_text(box_lbl, stock_name);
+                    break;
+
+                case 1:
+                    lv_label_set_text(box_lbl, stock_price);
+                    break;
+
+                case 2:
+                    if (stock_portfolio[stock_index].stck_pct_change < 0)
+                    {
+                        lv_obj_add_style(box_lbl, &stock_pct_red_style, 0);
+                    }
+                    else
+                    {
+                        lv_obj_add_style(box_lbl, &stock_pct_blue_style, 0);
+                    }
+                    lv_label_set_text(box_lbl, stock_change);
+                    break;
+
+                default:
+                    break;
+                }
             }
         }
-        timer_stock_containers->period = TIMER_PERIOD_MS;
+
+        active_page++;
+        if (active_page > (int)(NUM_SHARES / MAX_BOXES_PER_PAGE))
+            active_page = 0;
     }
 }
 
-void _set5StockBox(void)
+void _createStockBoxes(void)
 {
     ESP_LOGI(TAG, "Create stock_page_bg LVGL object");
     // Create Outer Box element
     ESP_LOGI(TAG, "Create outer box element");
     static lv_style_t outer_box_bg_style;
-    lv_obj_t *stock_outer_box = lv_obj_create(stock_page);
+    stock_outer_box = lv_obj_create(stock_page);
     lv_obj_set_scrollbar_mode(stock_outer_box, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_size(stock_outer_box, STOCK_CONTAINER_W, STOCK_CONTAINER_H);
     lv_obj_align(stock_outer_box, LV_ALIGN_BOTTOM_RIGHT, 0, -WC_MARGIN_OFFSET);
+    lv_obj_set_scrollbar_mode(stock_outer_box, LV_SCROLLBAR_MODE_OFF);
+
     lv_style_init(&outer_box_bg_style);
     lv_style_set_radius(&outer_box_bg_style, 0);
     lv_style_set_border_width(&outer_box_bg_style, 0);
@@ -161,63 +156,40 @@ void _set5StockBox(void)
     static lv_style_t box_stock_txt_style;
     ESP_LOGI(TAG, "Create text styles");
     lv_style_init(&box_stock_txt_style);
+    lv_style_set_text_opa(&box_stock_txt_style, LV_OPA_100);
     lv_style_set_text_color(&box_stock_txt_style, CL_STEEL_BLUE);
     lv_style_set_text_font(&box_stock_txt_style, &lv_font_montserrat_16);
+
+    lv_style_init(&stock_pct_red_style);
+    lv_style_set_text_color(&stock_pct_red_style, RED_STOCK);
+    lv_style_init(&stock_pct_blue_style);
+    lv_style_set_text_color(&stock_pct_blue_style, BLUE_STOCK);
+
     int box_pos_y;
-
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < MAX_BOXES_PER_PAGE; i++)
     {
-        ESP_LOGI(TAG, "For loop to create containers");
-
         box_pos_y = i * (STOCK_BOX_H + STOCK_CONTAINER_MARGIN) - WC_MARGIN_OFFSET;
-        stock_box = lv_obj_create(stock_outer_box);
+        lv_obj_t *stock_box = lv_obj_create(stock_outer_box);
         lv_obj_set_scrollbar_mode(stock_box, LV_SCROLLBAR_MODE_OFF);
         lv_obj_align(stock_box, LV_ALIGN_TOP_MID, 0, box_pos_y);
         lv_obj_set_size(stock_box, STOCK_CONTAINER_W, STOCK_BOX_H);
         lv_style_set_pad_all(&outer_box_bg_style, WC_MARGIN_OFFSET);
         lv_obj_add_style(stock_box, &box_stock_style, 0);
-        // local variables
-        stk_name = lv_label_create(stock_box);
-        stk_price = lv_label_create(stock_box);
-        stk_pct_change = lv_label_create(stock_box);
 
         // Stock Name
+        lv_obj_t *stk_name = lv_label_create(stock_box);
         lv_obj_add_style(stk_name, &box_stock_txt_style, 0);
-        lv_obj_align(stk_name, LV_ALIGN_LEFT_MID, 0, 0);
+        lv_obj_align(stk_name, LV_ALIGN_LEFT_MID, -5, 0);
+        lv_label_set_text(stk_name, "--");
         // Stock Price
+        lv_obj_t *stk_price = lv_label_create(stock_box);
         lv_obj_add_style(stk_price, &box_stock_txt_style, 0);
-        lv_obj_align(stk_price, LV_ALIGN_LEFT_MID, 120, 0);
+        lv_obj_align(stk_price, LV_ALIGN_LEFT_MID, 140, 0);
+        lv_label_set_text(stk_price, "A$ --.--");
         // Stock pct Change
+        lv_obj_t *stk_pct_change = lv_label_create(stock_box);
         lv_obj_add_style(stk_pct_change, &box_stock_txt_style, 0);
         lv_obj_align(stk_pct_change, LV_ALIGN_LEFT_MID, 240, 0);
-        // Stock PE
-
-        switch (i)
-        {
-        case (0):
-            stk_name_1 = stk_name;
-            stk_price_1 = stk_price;
-            stk_pct_change_1 = stk_pct_change;
-
-        case (1):
-            stk_name_2 = stk_name;
-            stk_price_2 = stk_price;
-            stk_pct_change_2 = stk_pct_change;
-
-        case (2):
-            stk_name_3 = stk_name;
-            stk_price_3 = stk_price;
-            stk_pct_change_3 = stk_pct_change;
-
-        case (3):
-            stk_name_4 = stk_name;
-            stk_price_4 = stk_price;
-            stk_pct_change_4 = stk_pct_change;
-
-        case (4):
-            stk_name_5 = stk_name;
-            stk_price_5 = stk_price;
-            stk_pct_change_5 = stk_pct_change;
-        }
+        lv_label_set_text(stk_pct_change, "-.-- %%");
     }
 }

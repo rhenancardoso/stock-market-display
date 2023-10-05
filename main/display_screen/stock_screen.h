@@ -4,10 +4,10 @@
 
 #ifndef _STOCK_SCREEN_H_
 #define _STOCK_SCREEN_H_
-#define TIMER_PERIOD_MS (uint16_t)20000
-#define FORECAST_TICK_CNT (uint32_t)3600000 / TIMER_PERIOD
+#define PAGE_TIMER_UPDATE_TICK 12500
 
 // Containers size def - - - - - - - - - - - - - - - - - - -
+#define MAX_BOXES_PER_PAGE 5
 #define HEADING_W EXAMPLE_LCD_H_RES
 #define HEADING_H 22
 #define STOCK_CONTAINER_MARGIN 5
@@ -28,14 +28,14 @@ extern lv_obj_t *stock_page;
 void stock_screen_ui(void);
 /**
  * @brief
- * Update objects in the stock screen page
+ * Update data to labels in the stock screen page
  * - Header: time label, battery icon
  * - Body: stock portfolio data
  * @param timer       pointer to an LVGL timer object
  */
-void _updateStockPage(lv_timer_t *timer);
+void _updateStockData(lv_timer_t *timer);
 /**
  * @brief
  * Create 5 stock box containers and add to the stock screen page.
  */
-void _set5StockBox(void);
+void _createStockBoxes(void);

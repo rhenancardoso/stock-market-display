@@ -19,7 +19,7 @@ char str_battery[3];
 
 void updateHeading(lv_timer_t *timer)
 {
-    ESP_LOGD(TAG, "Update main page: Heading and Today's weather box");
+    ESP_LOGD(TAG, "Update main page: Heading");
     // Get time
     time_t now;
     struct tm timeinfo;

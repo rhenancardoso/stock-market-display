@@ -7,7 +7,6 @@
 #include "../key_config.h"
 #include "lvgl.h"
 #include "time.h"
-// #include "utils.c"
 
 #ifndef _WEATHER_H_
 #define _WEATHER_H_

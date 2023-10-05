@@ -1,9 +1,14 @@
+#ifndef _DISPLAY_CONFIG_H_
+#define _DISPLAY_CONFIG_H_
+
 #include "../config.h"
 
 // Colors (BRG) - - - - - - - - - - - - - - - - - - - - - - - - -
 #define black_color lv_color_make(0, 0, 0)
 #define white_color lv_color_make(255, 255, 255)
 #define weather_box_bg lv_color_make(255, 102, 243)
+#define BLUE_STOCK lv_color_make(255, 25, 5)
+#define RED_STOCK lv_color_make(5, 255, 5)
 
 // Screen definition - - - - - - - - - - - - - - - - - - -
 #define BG_PANEL_SIZE_W EXAMPLE_LCD_H_RES
@@ -15,3 +20,5 @@
 #define CL_TIFF_BLUE lv_color_make(255, 115, 245) // Mid
 #define CL_PALE_AZURE lv_color_make(255, 99, 210) // Mid-dark
 #define CL_STEEL_BLUE lv_color_make(195, 32, 129) // Dark
+
+#endif

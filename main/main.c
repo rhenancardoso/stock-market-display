@@ -24,8 +24,8 @@ static const char *TAG = "main.c";
 extern ledc_channel_config_t lcd_bright;
 uint8_t lcd_bright_btn = 2;
 
-long int next_time_weather_screen;
-long int next_time_stock_screen;
+long int time_weather_screen;
+long int time_stock_screen;
 
 bool first_request_complete = false;
 extern void initialise_lcd(lv_disp_t *disp);
@@ -53,10 +53,12 @@ static void displayTask(void)
     // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
     ESP_LOGI(TAG, "Display main UI");
     ESP_LOGI(TAG, "While loop");
-    main_screen_ui();
-    stock_screen_ui();
     wifi_conn_screen_ui();
     lv_scr_load(wifi_conn_page);
+    vTaskDelay(250 / portTICK_PERIOD_MS);
+    main_screen_ui();
+    vTaskDelay(250 / portTICK_PERIOD_MS);
+    stock_screen_ui();
 
     long int time_now = 0;
     while (1)
@@ -64,24 +66,24 @@ static void displayTask(void)
         set_display_brigthness();
         if (first_request_complete)
         {
-            if (time_now == 0 || time_now >= next_time_stock_screen)
+            if (time_now == 0 || time_now >= time_stock_screen)
             {
                 ESP_LOGI(TAG, "Setting Home Page");
                 lv_scr_load(home_page);
-                next_time_weather_screen = clock() + WEATHER_SCREEN_MS;
-                next_time_stock_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
+                time_weather_screen = clock() + WEATHER_SCREEN_MS;
+                time_stock_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
             }
-            if (time_now >= next_time_weather_screen)
+            if (time_now >= time_weather_screen)
             {
                 ESP_LOGI(TAG, "Setting Stock Page");
                 lv_scr_load(stock_page);
-                next_time_stock_screen = clock() + STOCK_SCREEN_MS;
-                next_time_weather_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
+                time_stock_screen = clock() + STOCK_SCREEN_MS;
+                time_weather_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
             }
             time_now = clock();
         }
         // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
-        lv_tick_inc(5);
+        lv_tick_inc(50);
         lv_timer_handler();
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
@@ -144,8 +146,6 @@ static void extConnTask(void)
                 getWeeklyForecast();
 
                 first_request_complete = true;
-
-                next_time_weather_screen = clock();
             }
         }
         if (gpio_get_level(BTN_BRIGHT) == BTN_PRESSED)

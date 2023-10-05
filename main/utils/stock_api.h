@@ -9,8 +9,8 @@
 #define _STOCK_API_H_
 #define STOCK_REQUEST_URL "https://script.google.com/macros/s/%s/exec?read=null"
 #define STOCK_REQUEST_URL_EODHD "https://eodhd.com/api/real-time/%s?fmt=json&&api_token=%s"
-#define STOCK_UPDATE_MS 5 * 60 * 1000 // Stock's updated every 5 minutes
-#define STOCK_SCREEN_MS 15 * 1000     // Stock's screen displays every 15 seconds
+#define STOCK_UPDATE_MS 20 * 60 * 1000 // Stock's updated every 20 minutes
+#define STOCK_SCREEN_MS 30 * 1000      // Stock's screen displays every 30 seconds
 
 #endif
 
@@ -28,7 +28,7 @@ typedef struct stock
 {
     char stk_type[1];
     char stk_location[2];
-    char stk_name[40];
+    char stk_name[25];
     uint16_t stk_qtd;
     float stk_price;
     float stk_value;

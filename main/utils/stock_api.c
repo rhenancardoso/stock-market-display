@@ -58,7 +58,7 @@ void pullPortfolioFromJSON(cJSON *root)
                     case 1:
                         sprintf(stock_portfolio[data_row - 1].stk_location, "%s", item->valuestring);
                         break;
-                    case 2:
+                    case 3:
                         sprintf(stock_portfolio[data_row - 1].stk_name, "%s", item->valuestring);
                         break;
                     case 4:
