@@ -31,67 +31,24 @@ bool first_request_complete = false;
 extern void initialise_lcd(lv_disp_t *disp);
 extern void set_time(void);
 static void displayTask(void);
-static void extConnTask(void);
+static void mainAppTask(void);
 void read_bright_btn(void);
 void set_display_brigthness(void);
 
 void app_main()
 {
-    xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 50000, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(extConnTask, "extConnection", 20000, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 20000, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(mainAppTask, "StockMarket", 50000, NULL, 1, NULL, 0);
 }
 
-static void displayTask(void)
+static void mainAppTask(void)
 {
-    static const char *TAG = "displayTask";
-    // - - INITIALISATION - - - - -
-    // Display initialisation
-    lv_disp_t *disp;
-    initialise_lcd(&disp);
-
+    // Display brightness init
     ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (lcd_bright_btn * BRIGHTNESS_8BITS_5DIV));
+
     // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
-    ESP_LOGI(TAG, "Display main UI");
-    ESP_LOGI(TAG, "While loop");
-    wifi_conn_screen_ui();
-    lv_scr_load(wifi_conn_page);
-    vTaskDelay(250 / portTICK_PERIOD_MS);
-    main_screen_ui();
-    vTaskDelay(250 / portTICK_PERIOD_MS);
-    stock_screen_ui();
+    ESP_LOGI(TAG, "");
 
-    long int time_now = 0;
-    while (1)
-    {
-        set_display_brigthness();
-        if (first_request_complete)
-        {
-            if (time_now == 0 || time_now >= time_stock_screen)
-            {
-                ESP_LOGI(TAG, "Setting Home Page");
-                lv_scr_load(home_page);
-                time_weather_screen = clock() + WEATHER_SCREEN_MS;
-                time_stock_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
-            }
-            if (time_now >= time_weather_screen)
-            {
-                ESP_LOGI(TAG, "Setting Stock Page");
-                lv_scr_load(stock_page);
-                time_stock_screen = clock() + STOCK_SCREEN_MS;
-                time_weather_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
-            }
-            time_now = clock();
-        }
-        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
-        lv_tick_inc(50);
-        lv_timer_handler();
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
-}
-
-static void extConnTask(void)
-{
-    static const char *TAG = "extConnTask";
     // - - INITIALISATION - - - - -
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
@@ -103,8 +60,13 @@ static void extConnTask(void)
     long int time_now;
     weeklyForecast[0].is_data_collected = false; // this is used ot check if the weekly data has been retrieved for the first time, before changing its timer period.
     gpio_set_direction(BTN_BRIGHT, GPIO_MODE_INPUT);
+
+    ESP_LOGI(TAG, "Getting into main loop");
     while (1)
     {
+        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
+
+        set_display_brigthness();
         time_now = clock();
         if (wifi_conn.is_connected)
         {
@@ -131,16 +93,31 @@ static void extConnTask(void)
                     getStockData();
                     last_time_stock = clock();
                 }
+                if (time_now == 0 || time_now >= time_stock_screen)
+                {
+                    ESP_LOGI(TAG, "Setting Home Page");
+                    lv_scr_load(home_page);
+                    time_weather_screen = clock() + WEATHER_SCREEN_MS;
+                    time_stock_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
+                }
+                if (time_now >= time_weather_screen)
+                {
+                    ESP_LOGI(TAG, "Setting Stock Page");
+                    lv_scr_load(stock_page);
+                    time_stock_screen = clock() + STOCK_SCREEN_MS;
+                    time_weather_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
+                }
+                time_now = clock();
             }
             else
             {
                 ESP_LOGI(TAG, "Setting next weather time via 'clock()'");
                 getStockData();
-                vTaskDelay(250 / portTICK_PERIOD_MS);
+                vTaskDelay(20 / portTICK_PERIOD_MS);
 
                 ESP_LOGI(TAG, "Performing first request for Todays Forecast");
                 getTodaysForecast();
-                vTaskDelay(250 / portTICK_PERIOD_MS);
+                vTaskDelay(20 / portTICK_PERIOD_MS);
 
                 ESP_LOGI(TAG, "Performing first request for Weekly Forecast");
                 getWeeklyForecast();
@@ -157,7 +134,33 @@ static void extConnTask(void)
             ESP_LOGI(TAG, "Free Heap: %u bytes", xPortGetFreeHeapSize());
             last_time_heap_size = clock();
         }
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+}
+
+static void displayTask(void)
+{
+    static const char *TAG = "displayTask";
+    // - - INITIALISATION - - - - -
+    // Display initialisation
+    lv_disp_t *disp;
+    initialise_lcd(&disp);
+
+    // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
+    ESP_LOGI(TAG, "Initialise displayTask");
+    wifi_conn_screen_ui();
+    vTaskDelay(250 / portTICK_PERIOD_MS);
+    main_screen_ui();
+    vTaskDelay(250 / portTICK_PERIOD_MS);
+    stock_screen_ui();
+    lv_scr_load(wifi_conn_page);
+    lv_scr_load(wifi_conn_page);
+
+    while (1)
+    {
+        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
+        lv_tick_inc(50);
+        lv_timer_handler();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 

@@ -4,7 +4,7 @@
 
 #ifndef _STOCK_SCREEN_H_
 #define _STOCK_SCREEN_H_
-#define PAGE_TIMER_UPDATE_TICK 12500
+#define PAGE_TIMER_UPDATE_TICK 100
 
 // Containers size def - - - - - - - - - - - - - - - - - - -
 #define MAX_BOXES_PER_PAGE 5
