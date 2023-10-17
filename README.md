@@ -44,8 +44,8 @@ make part-table
 ```
 __Note:__ When running `make clean`, it is required to run `make` then `make part-table` again.
 
-# 2.4 LVGL Library Usage
-## 2.4.1 Converting PNG image to C array
+## 2.4 LVGL Library Usage
+### 2.4.1 Converting PNG image to C array
 To use PNG images with LVGL library, it is required to convert the images first.
 Luckily there is an online converter that makes it simpler.
 
@@ -70,11 +70,11 @@ Luckily there is an online converter that makes it simpler.
         search for a variable declaration using `const lv_img_dsc_t`.
         In the header file, declar the image using `LV_IMG_DECLARE(<variable-name>)`.
 ```
-# 2.5 Google Sheets API - Stock Market spreadsheet
+## 2.5 Google Sheets API - Stock Market spreadsheet
 An easy method for getting stock-market data is to use a google spreadsheet using google-finance formulas
 to get live stock market data. 
 
-## 2.5.1 Develpoing an WebApp in Google Sheets
+### 2.5.1 Develpoing an WebApp in Google Sheets
 for more: https://developers.google.com/apps-script/guides/web
 
 # Troubleshooting

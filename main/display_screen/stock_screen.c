@@ -58,7 +58,7 @@ void _updateStockData(lv_timer_t *timer)
 {
     if (stock_portfolio != NULL)
     {
-        if (!first_updated || update_tick > 120)
+        if (!first_updated || update_tick > 60)
         {
             uint32_t stk_box_cnt = lv_obj_get_child_cnt(stock_outer_box);
             for (uint8_t ind = 0; ind < stk_box_cnt; ind++)
@@ -75,7 +75,7 @@ void _updateStockData(lv_timer_t *timer)
                     sprintf(stock_name, "%s", stock_portfolio[stock_index].stk_name);
                     if (stock_portfolio[stock_index].stk_price >= 1000)
                     {
-                        sprintf(stock_price, "A$ %.0f", stock_portfolio[stock_index].stk_price);
+                        sprintf(stock_price, "A$ %'3.0f", stock_portfolio[stock_index].stk_price);
                     }
                     else
                     {

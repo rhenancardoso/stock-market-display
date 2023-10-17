@@ -1,6 +1,6 @@
 {
     "idf.adapterTargetName": "esp32s3",
-    "idf.port": "/dev/cu.usbmodem2101",
+    "idf.port": "/dev/cu.usbmodem101",
     "C_Cpp.errorSquiggles": "disabled",
     "idf.openOcdConfigs": [
         "interface/ftdi/esp32_devkitj_v1.cfg",
@@ -17,6 +17,7 @@
         "wifi.h": "c",
         "home_screen.h": "c",
         "stock_api.h": "c",
-        "stock_screen.h": "c"
+        "stock_screen.h": "c",
+        "math.h": "c"
     },
 }
