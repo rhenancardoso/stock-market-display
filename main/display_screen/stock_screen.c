@@ -7,6 +7,7 @@
 
 static const char *TAG = "stock_page";
 static const int NUM_SHARES = 21; // TODO: read from the stock struct
+
 Stock *stock_portfolio = NULL;
 
 lv_obj_t *stock_page;
@@ -21,6 +22,7 @@ bool first_updated;
 
 void stock_screen_ui(void)
 {
+
     ESP_LOGI(TAG, "setup screen");
     static lv_style_t screen_bg_style;
     lv_obj_t *stock_page_bg;

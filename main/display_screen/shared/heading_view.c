@@ -3,6 +3,7 @@
 #include <string.h>
 #include "esp_log.h"
 #include "../../utils/wifi.h"
+#include "../../utils/battery.h"
 #include "heading_view.h"
 
 static const char *TAG = "heading_view";
@@ -15,11 +16,13 @@ static lv_style_t battery_style;
 lv_obj_t *time_lbl;
 lv_obj_t *battery_lbl;
 char str_clock[9];
-char str_battery[3];
+char str_battery[15];
+uint16_t battery_pct;
 
 void updateHeading(lv_timer_t *timer)
 {
     ESP_LOGD(TAG, "Update main page: Heading");
+
     // Get time
     time_t now;
     struct tm timeinfo;
@@ -42,13 +45,27 @@ void updateHeading(lv_timer_t *timer)
     }
     ESP_LOGD(TAG, "Set time label in heading");
     lv_label_set_text(time_lbl, full_str_CLK);
+
     // Battery
     ESP_LOGD(TAG, "Set battery icon in heading");
-    lv_label_set_text(battery_lbl, LV_SYMBOL_BATTERY_FULL);
+    if (battery_pct > BATTERY_FULL)
+        sprintf(str_battery, "%s %d", LV_SYMBOL_BATTERY_FULL, battery_pct);
+    else if (battery_pct > BATTERY_3)
+        sprintf(str_battery, "%s %d", LV_SYMBOL_BATTERY_3, battery_pct);
+    else if (battery_pct > BATTERY_2)
+        sprintf(str_battery, "%s %d", LV_SYMBOL_BATTERY_2, battery_pct);
+    else if (battery_pct > BATTERY_1)
+        sprintf(str_battery, "%s %d", LV_SYMBOL_BATTERY_1, battery_pct);
+    else
+        sprintf(str_battery, "%s %d", LV_SYMBOL_BATTERY_EMPTY, battery_pct);
+
+    lv_label_set_text(battery_lbl, str_battery);
 }
 
 void setHeadingBox(lv_obj_t *screen)
 {
+
+    ESP_LOGI(TAG, "Setting heading container");
     lv_obj_t *heading_container;
     static lv_style_t heading_container_style;
 
@@ -77,4 +94,6 @@ void setHeadingBox(lv_obj_t *screen)
     lv_obj_add_style(battery_lbl, &battery_style, 0);
     lv_label_set_text(battery_lbl, str_clock);
     lv_obj_align(battery_lbl, LV_ALIGN_LEFT_MID, 0, 0);
+
+    ESP_LOGI(TAG, "Heading container initialised!");
 }

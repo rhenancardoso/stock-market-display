@@ -78,10 +78,10 @@ void main_screen_ui(void)
     // Add weather forecast boxes
     _set5DaysForecastBox();
 
-    ESP_LOGD(TAG, "Create 'timer_update_weather_box' timer with %dms period", TIMER_PERIOD);
+    ESP_LOGI(TAG, "Create 'timer_update_weather_box' timer with %dms period", TIMER_PERIOD);
     timer_update_weather_box = lv_timer_create(_updateMainPage, TIMER_PERIOD, NULL);
     timer_update_weather_box->repeat_count = -1;
-    ESP_LOGD(TAG, "Create 'timer_forecast_containers' timer with %dms period", INITIAL_5DAYS_TIMER_MS);
+    ESP_LOGI(TAG, "Create 'timer_forecast_containers' timer with %dms period", INITIAL_5DAYS_TIMER_MS);
     timer_forecast_containers = lv_timer_create(_update5DaysForecast, INITIAL_5DAYS_TIMER_MS, NULL);
     timer_forecast_containers->repeat_count = -1;
 }

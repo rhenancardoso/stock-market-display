@@ -8,21 +8,28 @@
 #include "utils/weather.h"
 #include "utils/stock_api.h"
 #include "utils/wifi.h"
+#include "utils/battery.h"
 #include "display_screen/home_screen.h"
 #include "display_screen/stock_screen.h"
 #include "display_screen/wifi_conn_scr.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_oneshot.h"
 
 #define BTN_DIV 5
 #define BRIGHTNESS_8BITS_5DIV (uint8_t)(255 / BTN_DIV)
 #define BTN_BRIGHT 14
+#define PWR_ENABLE_IO 15
+#define GPIO_HIGH 1
 #define BTN_PRESSED 0
 
 static const char *TAG = "main.c";
 
 extern ledc_channel_config_t lcd_bright;
 uint8_t lcd_bright_btn = 2;
+adc_oneshot_unit_handle_t adc2_handle;
+adc_cali_handle_t adc_cali_handle;
 
 long int time_weather_screen;
 long int time_stock_screen;
@@ -32,11 +39,36 @@ extern void initialise_lcd(lv_disp_t *disp);
 extern void set_time(void);
 static void displayTask(void);
 static void mainAppTask(void);
+static void testTask(void);
 void read_bright_btn(void);
 void set_display_brigthness(void);
 
 void app_main()
 {
+    ESP_LOGI(TAG, "calibration scheme version is %s", "Curve Fitting");
+    adc_cali_curve_fitting_config_t cali_config = {
+        .unit_id = ADC_UNIT_2,
+        .atten = ADC_ATTEN_DB_11,
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+    };
+    ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&cali_config, &adc_cali_handle));
+
+    // ADC initialisation
+    adc_oneshot_unit_init_cfg_t init_config2 = {
+        .unit_id = ADC_UNIT_2,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+    };
+    adc_oneshot_chan_cfg_t config = {
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+        .atten = ADC_ATTEN_DB_11,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config2, &adc2_handle));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc2_handle, ADC_CHANNEL_0, &config));
+
+    // Enable system to be battery powered
+    gpio_set_direction(PWR_ENABLE_IO, GPIO_MODE_OUTPUT);
+    gpio_set_level(PWR_ENABLE_IO, GPIO_HIGH);
+
     xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 20000, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(mainAppTask, "StockMarket", 50000, NULL, 1, NULL, 0);
 }
@@ -45,9 +77,6 @@ static void mainAppTask(void)
 {
     // Display brightness init
     ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (lcd_bright_btn * BRIGHTNESS_8BITS_5DIV));
-
-    // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
-    ESP_LOGI(TAG, "");
 
     // - - INITIALISATION - - - - -
     ESP_LOGI(TAG, "Initialising WIFI");
@@ -72,6 +101,7 @@ static void mainAppTask(void)
         {
             if (first_request_complete)
             {
+
                 if ((time_now - last_time_daily) >= TODAYS_UPDATE_MS)
                 {
                     // Daily forecast API call to daily forecast object
@@ -93,19 +123,24 @@ static void mainAppTask(void)
                     getStockData();
                     last_time_stock = clock();
                 }
-                if (time_now == 0 || time_now >= time_stock_screen)
+
+                if (time_now == 0 || time_now >= time_weather_screen)
                 {
-                    ESP_LOGI(TAG, "Setting Home Page");
+                    if (time_stock_screen < clock())
+                    {
+                        time_stock_screen = clock() + WEATHER_SCREEN_MS;
+                        ESP_LOGI(TAG, "Setting Home Page");
+                    }
                     lv_scr_load(home_page);
-                    time_weather_screen = clock() + WEATHER_SCREEN_MS;
-                    time_stock_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
                 }
-                if (time_now >= time_weather_screen)
+                if (time_now >= time_stock_screen)
                 {
-                    ESP_LOGI(TAG, "Setting Stock Page");
+                    if (time_weather_screen < clock())
+                    {
+                        time_weather_screen = clock() + STOCK_SCREEN_MS;
+                        ESP_LOGI(TAG, "Setting Stock Page");
+                    }
                     lv_scr_load(stock_page);
-                    time_stock_screen = clock() + STOCK_SCREEN_MS;
-                    time_weather_screen = clock() + WEATHER_SCREEN_MS + STOCK_SCREEN_MS;
                 }
                 time_now = clock();
             }
@@ -129,10 +164,11 @@ static void mainAppTask(void)
         {
             read_bright_btn();
         }
-        if ((time_now - last_time_heap_size) > 2000)
+        if ((time_now - last_time_heap_size) > 1000)
         {
             ESP_LOGI(TAG, "Free Heap: %u bytes", xPortGetFreeHeapSize());
             last_time_heap_size = clock();
+            battery_reading();
         }
     }
 }
@@ -153,12 +189,11 @@ static void displayTask(void)
     vTaskDelay(250 / portTICK_PERIOD_MS);
     stock_screen_ui();
     lv_scr_load(wifi_conn_page);
-    lv_scr_load(wifi_conn_page);
 
     while (1)
     {
         // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
-        lv_tick_inc(50);
+        lv_tick_inc(25);
         lv_timer_handler();
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }

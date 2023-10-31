@@ -18,7 +18,7 @@
 #include "lwip/sys.h"
 
 #define CITY_TZ "Melbourne"
-#define CITY_UTC_TZ "UTC-10:00"
+#define CITY_UTC_TZ "AEST-10AEDT,M10.1.0/3,M4.1.0/3"
 
 void time_sync_notification_cb(struct timeval *tv);
 void get_SNTP_time(char *date_time);
