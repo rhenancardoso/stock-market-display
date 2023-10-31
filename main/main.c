@@ -20,6 +20,7 @@
 #define BTN_DIV 5
 #define BRIGHTNESS_8BITS_5DIV (uint8_t)(255 / BTN_DIV)
 #define BTN_BRIGHT 14
+#define BTN_KEY 0
 #define PWR_ENABLE_IO 15
 #define GPIO_HIGH 1
 #define BTN_PRESSED 0
@@ -30,6 +31,8 @@ extern ledc_channel_config_t lcd_bright;
 uint8_t lcd_bright_btn = 2;
 adc_oneshot_unit_handle_t adc2_handle;
 adc_cali_handle_t adc_cali_handle;
+
+bool stock_screen_change = 0;
 
 long int time_weather_screen;
 long int time_stock_screen;
@@ -42,6 +45,7 @@ static void mainAppTask(void);
 static void testTask(void);
 void read_bright_btn(void);
 void set_display_brigthness(void);
+void change_stock_screen(void);
 
 void app_main()
 {
@@ -68,6 +72,10 @@ void app_main()
     // Enable system to be battery powered
     gpio_set_direction(PWR_ENABLE_IO, GPIO_MODE_OUTPUT);
     gpio_set_level(PWR_ENABLE_IO, GPIO_HIGH);
+    // Configure brigthness button
+    gpio_set_direction(BTN_BRIGHT, GPIO_MODE_INPUT);
+    // Configure key button
+    gpio_set_direction(BTN_KEY, GPIO_MODE_INPUT);
 
     xTaskCreatePinnedToCore(displayTask, "lvglDisplay", 20000, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(mainAppTask, "StockMarket", 50000, NULL, 1, NULL, 0);
@@ -88,7 +96,6 @@ static void mainAppTask(void)
     long int last_time_stock = clock();
     long int time_now;
     weeklyForecast[0].is_data_collected = false; // this is used ot check if the weekly data has been retrieved for the first time, before changing its timer period.
-    gpio_set_direction(BTN_BRIGHT, GPIO_MODE_INPUT);
 
     ESP_LOGI(TAG, "Getting into main loop");
     while (1)
@@ -164,6 +171,10 @@ static void mainAppTask(void)
         {
             read_bright_btn();
         }
+        if (gpio_get_level(BTN_KEY) == BTN_PRESSED)
+        {
+            change_stock_screen();
+        }
         if ((time_now - last_time_heap_size) > 1000)
         {
             ESP_LOGI(TAG, "Free Heap: %u bytes", xPortGetFreeHeapSize());
@@ -222,4 +233,17 @@ void set_display_brigthness(void)
 {
     ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (lcd_bright_btn * BRIGHTNESS_8BITS_5DIV));
     ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+}
+
+/**
+ * @brief Read when the KEY button (GPIO0) is pressed and update lcd_bright_btn variable.
+ */
+void change_stock_screen(void)
+{
+    while (gpio_get_level(BTN_KEY) == BTN_PRESSED)
+    {
+        // Filter btn noise, in case it is long pressed or flaky signal
+    }
+    stock_screen_change = true;
+    ESP_LOGI(TAG, "GPIO0 button pressed");
 }

@@ -60,7 +60,7 @@ void _updateStockData(lv_timer_t *timer)
 {
     if (stock_portfolio != NULL)
     {
-        if (!first_updated || update_tick > 60)
+        if (!first_updated || update_tick > 40 || stock_screen_change)
         {
             uint32_t stk_box_cnt = lv_obj_get_child_cnt(stock_outer_box);
             for (uint8_t ind = 0; ind < stk_box_cnt; ind++)
@@ -123,6 +123,7 @@ void _updateStockData(lv_timer_t *timer)
                     }
                 }
             }
+            stock_screen_change = false;
             first_updated = true;
             update_tick = 0;
             active_page++;

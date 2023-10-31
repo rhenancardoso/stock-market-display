@@ -20,6 +20,7 @@
 #endif
 
 extern lv_obj_t *stock_page;
+extern bool stock_screen_change;
 
 /**
  * @brief
