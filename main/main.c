@@ -24,6 +24,7 @@
 #define PWR_ENABLE_IO 15
 #define GPIO_HIGH 1
 #define BTN_PRESSED 0
+#define LONG_PRESS_MS 500
 
 static const char *TAG = "main.c";
 
@@ -38,14 +39,14 @@ long int time_weather_screen;
 long int time_stock_screen;
 
 bool first_request_complete = false;
-extern void initialise_lcd(lv_disp_t *disp);
-extern void set_time(void);
+extern void InitialiseLCD(lv_disp_t *disp);
+extern void SetTime(void);
 static void displayTask(void);
 static void mainAppTask(void);
-static void testTask(void);
-void read_bright_btn(void);
-void set_display_brigthness(void);
-void change_stock_screen(void);
+void ReadBrightBtn(void);
+void SetDisplayBrightness(void);
+void ChangeStockScreen(void);
+void ToggleStockWeatherScreen(void);
 
 void app_main()
 {
@@ -89,7 +90,7 @@ static void mainAppTask(void)
     // - - INITIALISATION - - - - -
     ESP_LOGI(TAG, "Initialising WIFI");
     initialize_wifi();
-    set_time();
+    SetTime();
     long int last_time_weekly = clock();
     long int last_time_daily = clock();
     long int last_time_heap_size = clock();
@@ -102,7 +103,7 @@ static void mainAppTask(void)
     {
         // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
 
-        set_display_brigthness();
+        SetDisplayBrightness();
         time_now = clock();
         if (wifi_conn.is_connected)
         {
@@ -140,6 +141,7 @@ static void mainAppTask(void)
                     }
                     lv_scr_load(home_page);
                 }
+
                 if (time_now >= time_stock_screen)
                 {
                     if (time_weather_screen < clock())
@@ -169,17 +171,17 @@ static void mainAppTask(void)
         }
         if (gpio_get_level(BTN_BRIGHT) == BTN_PRESSED)
         {
-            read_bright_btn();
+            ReadBrightBtn();
         }
         if (gpio_get_level(BTN_KEY) == BTN_PRESSED)
         {
-            change_stock_screen();
+            ChangeStockScreen();
         }
         if ((time_now - last_time_heap_size) > 1000)
         {
-            ESP_LOGI(TAG, "Free Heap: %u bytes", xPortGetFreeHeapSize());
+            // ESP_LOGI(TAG, "Free Heap: %u bytes", xPortGetFreeHeapSize());
             last_time_heap_size = clock();
-            battery_reading();
+            ReadBattery();
         }
     }
 }
@@ -190,7 +192,7 @@ static void displayTask(void)
     // - - INITIALISATION - - - - -
     // Display initialisation
     lv_disp_t *disp;
-    initialise_lcd(&disp);
+    InitialiseLCD(&disp);
 
     // - - - ACTION - - - - - - - - - - - - - - - - - - - - - - /
     ESP_LOGI(TAG, "Initialise displayTask");
@@ -213,7 +215,7 @@ static void displayTask(void)
 /**
  * @brief Read when the BRIGHT button (KEY) is pressed and update lcd_bright_btn variable.
  */
-void read_bright_btn(void)
+void ReadBrightBtn(void)
 {
     while (gpio_get_level(BTN_BRIGHT) == BTN_PRESSED)
     {
@@ -229,7 +231,7 @@ void read_bright_btn(void)
 /**
  * @brief Set the display brigthness based on lcd_bright_btn variable.
  */
-void set_display_brigthness(void)
+void SetDisplayBrightness(void)
 {
     ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (lcd_bright_btn * BRIGHTNESS_8BITS_5DIV));
     ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
@@ -238,12 +240,46 @@ void set_display_brigthness(void)
 /**
  * @brief Read when the KEY button (GPIO0) is pressed and update lcd_bright_btn variable.
  */
-void change_stock_screen(void)
+void ChangeStockScreen(void)
 {
+    uint16_t time_pressed = clock();
     while (gpio_get_level(BTN_KEY) == BTN_PRESSED)
     {
         // Filter btn noise, in case it is long pressed or flaky signal
     }
-    stock_screen_change = true;
-    ESP_LOGI(TAG, "GPIO0 button pressed");
+
+    uint16_t time_held_pressed = clock() - time_pressed;
+    ESP_LOGI(TAG, "Time held pressed: %d", time_held_pressed);
+    if (time_held_pressed < LONG_PRESS_MS)
+    {
+        stock_screen_change = true;
+        ESP_LOGI(TAG, "GPIO0 button pressed");
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Long press");
+        ToggleStockWeatherScreen();
+    }
+}
+
+/**
+ * @brief Check the current page and toggle to the other one
+ */
+void ToggleStockWeatherScreen(void)
+{
+    if (clock() >= time_weather_screen)
+    {
+        // Current screen is the weather screen
+        time_stock_screen = clock();
+        time_weather_screen = clock() + STOCK_SCREEN_MS;
+        ESP_LOGI(TAG, "Current screen: weather");
+    }
+    else
+    {
+        // Current screen is the stock screen
+        time_weather_screen = clock();
+        time_stock_screen = clock() + WEATHER_SCREEN_MS;
+        ESP_LOGI(TAG, "Current screen: stock");
+    }
+    ESP_LOGI(TAG, "=>time_now: %ld, =>time_weather: %ld =>time_stock: %ld", clock(), time_weather_screen, time_stock_screen);
 }

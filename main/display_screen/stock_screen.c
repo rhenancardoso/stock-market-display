@@ -47,7 +47,7 @@ void stock_screen_ui(void)
     first_updated = false;
     // Add heading
     ESP_LOGI(TAG, "Home Screen calling setHeadingBox function");
-    setHeadingBox(stock_page);
+    SetHeadingBox(stock_page);
     // Add Stock Boxes
     _createStockBoxes();
 
@@ -123,10 +123,12 @@ void _updateStockData(lv_timer_t *timer)
                     }
                 }
             }
+
             stock_screen_change = false;
             first_updated = true;
             update_tick = 0;
             active_page++;
+
             if (active_page > (int)(NUM_SHARES / MAX_BOXES_PER_PAGE))
                 active_page = 0;
         }

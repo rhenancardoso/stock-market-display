@@ -72,7 +72,7 @@ void main_screen_ui(void)
 
     // Add heading
     ESP_LOGI(TAG, "Home Screen calling setHeadingBox function");
-    setHeadingBox(home_page);
+    SetHeadingBox(home_page);
     // Add weather container
     _setWeatherBox();
     // Add weather forecast boxes
@@ -88,7 +88,7 @@ void main_screen_ui(void)
 
 void _updateMainPage(lv_timer_t *timer)
 {
-    updateHeading(timer);
+    UpdateHeading(timer);
     // Weather
     if (w_melb.is_data_collected)
     {

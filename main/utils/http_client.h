@@ -31,7 +31,7 @@ void http_request(char *url);
 /**
  * Raw HTTP request for the Google Sheets web app
  */
-void http_request_stock(char *url);
+void StockHttpRequest(char *url);
 /**
  * @brief Event handler for the HTTP requests
  *
@@ -41,4 +41,4 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt);
  * @brief Remove characteres from buffer_output
  *
  */
-void removeString(int startIndex, int countToRemove);
+void RemoveString(int startIndex, int countToRemove);

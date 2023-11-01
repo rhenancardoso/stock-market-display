@@ -21,7 +21,7 @@
 #define CITY_UTC_TZ "AEST-10AEDT,M10.1.0/3,M4.1.0/3"
 
 void time_sync_notification_cb(struct timeval *tv);
-void get_SNTP_time(char *date_time);
-static void initialize_sntp(void);
-static void get_system_time(void);
-void set_time(void);
+void GetSntpTime(char *date_time);
+static void InitialiseSNTP(void);
+static void GetSystemTime(void);
+void SetTime(void);

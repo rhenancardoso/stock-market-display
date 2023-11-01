@@ -56,7 +56,7 @@ void http_request(char *url)
     esp_http_client_cleanup(client);
 }
 
-void read_http_response(char *output_buffer)
+void ReadHttpResponse(char *output_buffer)
 {
     ESP_LOGI(TAG, "Parsing JSON");
     ESP_LOGI(TAG, "HTTP http_response buffer cJSON Parse: %s", output_buffer);
@@ -107,11 +107,11 @@ esp_err_t _http_stock_event_handler(esp_http_client_event_t *evt)
 cJSON *http_get_portfolio_request(char *url)
 {
     ESP_LOGI(TAG, "HTTP JSON request");
-    http_request_stock(url);
+    StockHttpRequest(url);
     return stock_json;
 }
 
-void http_request_stock(char *url)
+void StockHttpRequest(char *url)
 {
     buffer_output = (char *)malloc(MAX_HTTP_OUTPUT_BUFFER);
     ESP_LOGI(TAG, "HTTP Stock request URL: %s", url);
@@ -139,7 +139,7 @@ void http_request_stock(char *url)
         ESP_LOGI(TAG, "HTTPS Status = %d, content_length = %" PRId64,
                  status_code,
                  esp_http_client_get_content_length(client));
-        removeString(0, RESPONSE_CHAR_REM_SIZE);
+        RemoveString(0, RESPONSE_CHAR_REM_SIZE);
         stock_json = cJSON_Parse(response_output);
     }
     if (buffer_output != NULL)
@@ -153,7 +153,7 @@ void http_request_stock(char *url)
     esp_http_client_cleanup(client);
 }
 
-void removeString(int startIndex, int countToRemove)
+void RemoveString(int startIndex, int countToRemove)
 {
     ESP_LOGI(TAG, "Removing heading string from stock response");
     int strLen = strlen(buffer_output);

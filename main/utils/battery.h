@@ -29,4 +29,4 @@ extern adc_cali_handle_t adc_cali_handle;
 /**
  * @brief Read ADC value for battery level and set `battery_pct`.
  */
-extern void battery_reading(void);
+extern void ReadBattery(void);

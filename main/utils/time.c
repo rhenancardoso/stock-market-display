@@ -10,7 +10,7 @@ void time_sync_notification_cb(struct timeval *tv)
     ESP_LOGI(TAG, "Notification of a time synchronization event");
 }
 
-void get_SNTP_time(char *date_time)
+void GetSntpTime(char *date_time)
 {
     ESP_LOGI(TAG, "Get SNTP time");
     char strftime_buf[64];
@@ -30,7 +30,7 @@ void get_SNTP_time(char *date_time)
     strcpy(date_time, strftime_buf);
 }
 
-static void initialize_sntp(void)
+static void InitialiseSNTP(void)
 {
     ESP_LOGI(TAG, "Initializing SNTP");
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -39,9 +39,9 @@ static void initialize_sntp(void)
     sntp_init();
 }
 
-static void get_system_time(void)
+static void GetSystemTime(void)
 {
-    initialize_sntp();
+    InitialiseSNTP();
     // wait for time to be set
     time_t now = 0;
     struct tm timeinfo = {0};
@@ -56,9 +56,9 @@ static void get_system_time(void)
     localtime_r(&now, &timeinfo);
 }
 
-void set_time(void)
+void SetTime(void)
 {
     ESP_LOGI(TAG, "Set time from SNTP server");
-    get_system_time();
-    get_SNTP_time(current_time);
+    GetSystemTime();
+    GetSntpTime(current_time);
 }

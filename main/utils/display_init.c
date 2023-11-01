@@ -21,22 +21,22 @@ ledc_channel_config_t lcd_bright;
 static lv_disp_drv_t disp_drv;      // contains callback functions
 static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
 static lv_color_t *lv_disp_buf;
-static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
-static void increase_lvgl_tick(void *arg);
-static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
-void initialise_lcd(lv_disp_t *disp);
+static void FlushLvglCb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
+static void IncreaseLvglTick(void *arg);
+static bool NotifyLvglFlushReady(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
+void InitialiseLCD(lv_disp_t *disp);
 ledc_timer_config_t lcd_brigtht_timer;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 static bool
-notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
+NotifyLvglFlushReady(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
     lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
     lv_disp_flush_ready(disp_driver);
     return false;
 }
 
-static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
+static void FlushLvglCb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t)drv->user_data;
     int offsetx1 = area->x1;
@@ -48,7 +48,7 @@ static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t 
     lv_disp_flush_ready(drv);
 }
 
-void initialise_lcd(lv_disp_t *disp)
+void InitialiseLCD(lv_disp_t *disp)
 {
     // - - - - - - LCD DRIVER INITIALISATION - - - - - - - - - - - - - - - - - - - - - - - - -/
     ESP_LOGI(TAG, "Turn off LCD backlight");
@@ -94,7 +94,7 @@ void initialise_lcd(lv_disp_t *disp)
         .user_ctx = &disp_drv,
         .lcd_cmd_bits = LCD_CMD_BITS,
         .lcd_param_bits = LCD_PARAM_BITS,
-        .on_color_trans_done = notify_lvgl_flush_ready,
+        .on_color_trans_done = NotifyLvglFlushReady,
         .dc_levels =
             {
                 .dc_idle_level = 0,
@@ -140,7 +140,7 @@ void initialise_lcd(lv_disp_t *disp)
     /* Change the following line to your display resolution */
     disp_drv.hor_res = EXAMPLE_LCD_H_RES;
     disp_drv.ver_res = EXAMPLE_LCD_V_RES;
-    disp_drv.flush_cb = lvgl_flush_cb;
+    disp_drv.flush_cb = FlushLvglCb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
 

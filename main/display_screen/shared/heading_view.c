@@ -8,7 +8,7 @@
 
 static const char *TAG = "heading_view";
 
-extern void _updateHeading(lv_timer_t *timer);
+extern void UpdateHeading(lv_timer_t *timer);
 
 static lv_style_t time_style;
 static lv_style_t weather_style;
@@ -19,7 +19,7 @@ char str_clock[9];
 char str_battery[15];
 uint16_t battery_pct;
 
-void updateHeading(lv_timer_t *timer)
+void UpdateHeading(lv_timer_t *timer)
 {
     ESP_LOGD(TAG, "Update main page: Heading");
 
@@ -62,7 +62,7 @@ void updateHeading(lv_timer_t *timer)
     lv_label_set_text(battery_lbl, str_battery);
 }
 
-void setHeadingBox(lv_obj_t *screen)
+void SetHeadingBox(lv_obj_t *screen)
 {
 
     ESP_LOGI(TAG, "Setting heading container");
