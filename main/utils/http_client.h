@@ -1,3 +1,4 @@
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -8,7 +9,7 @@
 
 #define MAX_HTTP_OUTPUT_BUFFER 4500
 #define _TIMEOUT 10
-#define RESPONSE_CHAR_REM_SIZE 99
+#define FIND_STRING_RESPONSE "[["
 
 /**
  * Extract JSON data object from Weather API HTTP request
@@ -38,7 +39,7 @@ void StockHttpRequest(char *url);
  */
 esp_err_t _http_event_handler(esp_http_client_event_t *evt);
 /**
- * @brief Remove characteres from buffer_output
+ * @brief Search giving string and assign the rest to response_output
  *
  */
-void RemoveString(int startIndex, int countToRemove);
+void RemoveString(char *findString);

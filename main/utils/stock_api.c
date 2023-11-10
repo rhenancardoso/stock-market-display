@@ -16,7 +16,7 @@ void getStockData(void)
     }
     else
     {
-        ESP_LOGE(TAG, "null portfolio API response");
+        ESP_LOGE(TAG, "null portfolio API response\nError: %s", cJSON_GetErrorPtr());
     }
     ESP_LOGI(TAG, "Get portfolio data complete. Deleting JSON");
     cJSON_Delete(http_api_response);

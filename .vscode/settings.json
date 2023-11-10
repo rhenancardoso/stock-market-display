@@ -18,6 +18,8 @@
         "home_screen.h": "c",
         "stock_api.h": "c",
         "stock_screen.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "battery.h": "c",
+        "time.h": "c"
     },
 }

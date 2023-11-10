@@ -80,8 +80,8 @@ cJSON *http_get_JSON_request(char *url)
 
 // ============== STOCK MARKET CALL =================================================== //
 
-static char *buffer_output;                          // Buffer to store JSON data
-static char response_output[MAX_HTTP_OUTPUT_BUFFER]; // Buffer to store JSON data
+static char *buffer_output; // Buffer to store full response from GET request
+char *response_output;      // Buffer to store JSON data after cleaning
 
 esp_err_t _http_stock_event_handler(esp_http_client_event_t *evt)
 {
@@ -139,7 +139,8 @@ void StockHttpRequest(char *url)
         ESP_LOGI(TAG, "HTTPS Status = %d, content_length = %" PRId64,
                  status_code,
                  esp_http_client_get_content_length(client));
-        RemoveString(0, RESPONSE_CHAR_REM_SIZE);
+        RemoveString(FIND_STRING_RESPONSE);
+        ESP_LOGI(TAG, "cJSON response: %s", response_output);
         stock_json = cJSON_Parse(response_output);
     }
     if (buffer_output != NULL)
@@ -153,23 +154,19 @@ void StockHttpRequest(char *url)
     esp_http_client_cleanup(client);
 }
 
-void RemoveString(int startIndex, int countToRemove)
+void RemoveString(char *findString)
 {
     ESP_LOGI(TAG, "Removing heading string from stock response");
     int strLen = strlen(buffer_output);
 
-    if (startIndex < 0 || startIndex >= strLen || countToRemove <= 0)
+    if (strLen == 0)
     {
         // Invalid input, do nothing.
+        ESP_LOGE(TAG, "Invalid input / strLen: %d", strLen);
         return;
     }
 
-    // Calculate the number of characters to keep.
-    int charsToKeep = strLen - countToRemove;
-
-    // Move the characters after the removal range to the left.
-    for (int i = startIndex; i < charsToKeep; i++)
-    {
-        response_output[i] = buffer_output[i + countToRemove];
-    }
+    // Get giving string within the buffer output
+    response_output = strstr(buffer_output, findString);
+    ESP_LOGD(TAG, "response buffer: %s", response_output);
 }
